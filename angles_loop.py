@@ -241,6 +241,8 @@ plt.title('CONTROLS')
 plt.xlabel('Angle')
 plt.ylabel('Occurrency')
 
+
+plot_y_n = True
 for i in range(pt_number):
     data = pt_3D_data[i,:,:]
     until = list(data[3,:]).index(-2)
@@ -375,7 +377,7 @@ for i in range(pt_number):
     
     angle_pt[i] = np.degrees(angle)
 
-    if plot_y_n:            
+    if plot_y_n and i<9:            
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.scatter(xs,ys, c = fs, cmap = 'jet', alpha = 0.4)    

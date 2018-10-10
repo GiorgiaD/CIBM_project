@@ -39,12 +39,16 @@ def plot_2d(mydata, title):
     plt.title(title)
     plt.show()
     
-def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix for one scan
+def organize_data(data):
     until = list(data[3,:]).index(-2)
     xs = data[0,0:until]
     ys = data[1,0:until]
     zs = data[2,0:until]
     fs = data[3,0:until] 
+    return xs,ys,zs,fs
+    
+def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix for one scan with fs already 14-fs
+    xs,ys,zs,fs = organize_data(data) 
     
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
 
@@ -97,11 +101,7 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
     
 def mean_dist_b_line(data, title, coeff_w, plot_y_n = False):
     # set the data
-    until = list(data[3,:]).index(-2)
-    xs = data[0,0:until]
-    ys = data[1,0:until]
-    zs = data[2,0:until]
-    fs = data[3,0:until] 
+    xs,ys,zs,fs = organize_data(data)
     # useful function
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
     # two points on the line
@@ -162,13 +162,10 @@ def mean_dist_b_line(data, title, coeff_w, plot_y_n = False):
     
     return mean_dist, above_minus_below
 
-def three_f_ranges(data,title, plot_y_n = False, eps = 1.5, min_samples = 3):
+def three_f_ranges(data,title, coeff_w, plot_y_n = False, eps = 1.5, min_samples = 3):
     # set the data
-    until = list(data[3,:]).index(-2)
-    xs = data[0,0:until]
-    ys = data[1,0:until]
-    zs = data[2,0:until]
-    fs = data[3,0:until] 
+    xs,ys,zs,fs = organize_data(data)
+    
     # useful function
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
     # set the ranges
@@ -208,64 +205,119 @@ def three_f_ranges(data,title, plot_y_n = False, eps = 1.5, min_samples = 3):
         plt.title(title)
         plt.show()
         
+    # separate regions R and A1
+    xs_all = [xs_flow,xs_fmedium,xs_fhigh]
+    ys_all = [ys_flow,ys_fmedium,ys_fhigh]
+    
+    xs_flow_R = []
+    xs_flow_A = []
+    xs_fmedium_R = []
+    xs_fmedium_A = []
+    xs_fhigh_R = []
+    xs_fhigh_A = []
+    ys_flow_R = []
+    ys_flow_A = []
+    ys_fmedium_R = []
+    ys_fmedium_A = []
+    ys_fhigh_R = []
+    ys_fhigh_A = []
+    
+    xs_R = [xs_flow_R, xs_fmedium_R, xs_fhigh_R]
+    ys_R = [ys_flow_R, ys_fmedium_R, ys_fhigh_R]
+    xs_A = [xs_flow_A, xs_fmedium_A, xs_fhigh_A]
+    ys_A = [ys_flow_A, ys_fmedium_A, ys_fhigh_A]
+    
+    for i in range(len(xs_all)): # i stands for low, medium, high
+        xs = xs_all[i]
+        ys = ys_all[i]
+        for j in range(len(xs)): # j stands for the index of the list of coordinate
+            if ys[j] > xs[j]*coeff_w[0]+coeff_w[1]: # R region
+                x_list = np.array([xs[j]])
+                y_list = np.array([ys[j]])
+                xs_R[i] = np.concatenate ((xs_R[i],x_list)) 
+                ys_R[i] = np.concatenate ((ys_R[i],y_list)) 
+            else:
+                x_list = np.array([xs[j]])
+                y_list = np.array([ys[j]])
+                xs_A[i] = np.concatenate ((xs_A[i],x_list)) 
+                ys_A[i] = np.concatenate ((ys_A[i],y_list))
+        
     # find number of cluster and respective size
-    coord_low = np.zeros([len(xs_flow),2])
-    coord_low[:,0] = xs_flow
-    coord_low[:,1] = ys_flow
+    coord_low_R = np.zeros([len(xs_R[0]),2])
+    coord_low_A = np.zeros([len(xs_A[0]),2])
+    coord_low_R[:,0] = xs_R[0]
+    coord_low_R[:,1] = ys_R[0]
+    coord_low_A[:,0] = xs_A[0]
+    coord_low_A[:,1] = ys_A[0]
     
-    coord_medium = np.zeros([len(xs_fmedium),2])
-    coord_medium[:,0] = xs_fmedium
-    coord_medium[:,1] = ys_fmedium
+    coord_medium_R = np.zeros([len(xs_R[1]),2])
+    coord_medium_A = np.zeros([len(xs_A[1]),2])
+    coord_medium_R[:,0] = xs_R[1]
+    coord_medium_R[:,1] = ys_R[1]
+    coord_medium_A[:,0] = xs_A[1]
+    coord_medium_A[:,1] = ys_A[1]
     
-    coord_high = np.zeros([len(xs_fhigh),2])
-    coord_high[:,0] = xs_fhigh
-    coord_high[:,1] = ys_fhigh
+    coord_high_R = np.zeros([len(xs_R[2]),2])
+    coord_high_A = np.zeros([len(xs_A[2]),2])
+    coord_high_R[:,0] = xs_R[2]
+    coord_high_R[:,1] = ys_R[2]
+    coord_high_A[:,0] = xs_A[2]
+    coord_high_A[:,1] = ys_A[2]
     
-    coord_all = [coord_low,coord_medium,coord_high]
+    coord_all = [coord_low_R, coord_low_A,coord_medium_R,coord_medium_A,coord_high_R,coord_high_A]
     
-    cluster_number = np.zeros(3)
-    cluster_size_mean = np.zeros(3)
+    cluster_number = np.zeros(len(coord_all))
+    cluster_size_mean = np.zeros(len(coord_all))
     
     for j,X in enumerate(coord_all):
-        clustering = DBSCAN(eps=1.5, min_samples=3).fit(X)
-        labels = clustering.labels_ 
-        n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-        unique_labels = set(labels)
-        cluster_size = 0
-        for lab in unique_labels:
-            if lab != -1:
-                idx_lab = get_indexes(lab,labels)
-                cluster_size += len(idx_lab)
-        cluster_size_mean[j] = cluster_size/n_clusters_
-        cluster_number[j] = n_clusters_
-        
-        # Plot results (Black removed and is used for noise instead)
-        core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
-        core_samples_mask[clustering.core_sample_indices_] = True
-        
-        colors = [plt.cm.Spectral(each)
-                  for each in np.linspace(0, 1, len(unique_labels))]
+        if np.shape(X)[0]==0:
+            cluster_size_mean[j] = 0
+            cluster_number[j] = 0
+        else:
+            clustering = DBSCAN(eps=eps, min_samples=3).fit(X)
+            labels = clustering.labels_ 
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            unique_labels = set(labels)
+            cluster_size = 0
+            for lab in unique_labels:
+                if lab != -1:
+                    idx_lab = get_indexes(lab,labels)
+                    cluster_size += len(idx_lab)
+            if n_clusters_ != 0:
+                cluster_size_mean[j] = cluster_size/n_clusters_
+            cluster_number[j] = n_clusters_
             
-        if plot_y_n:
-            plt.figure()
-            for k, col in zip(unique_labels, colors):
-                if k == -1:
-                    # Black used for noise.
-                    col = [0, 0, 0, 1]
+            # Plot results (Black removed and is used for noise instead)
+            core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
+            core_samples_mask[clustering.core_sample_indices_] = True
             
-                class_member_mask = (labels == k)
-            
-                xy = X[class_member_mask & core_samples_mask]
+            colors = [plt.cm.Spectral(each)
+                      for each in np.linspace(0, 1, len(unique_labels))]
                 
-                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                         markeredgecolor='k', markersize=14)
+            if plot_y_n:
+                plt.figure()
+                for k, col in zip(unique_labels, colors):
+                    if k == -1:
+                        # Black used for noise.
+                        col = [0, 0, 0, 1]
+                
+                    class_member_mask = (labels == k)
+                
+                    xy = X[class_member_mask & core_samples_mask]
+                    
+                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                             markeredgecolor='k', markersize=14)
+                
+                    xy = X[class_member_mask & ~core_samples_mask]
+                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                             markeredgecolor='k', markersize=6)
             
-                xy = X[class_member_mask & ~core_samples_mask]
-                plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                         markeredgecolor='k', markersize=6)
-        
-        plt.title('Estimated number of clusters: %d' % n_clusters_)
-        plt.show()
+            #plt.title('Estimated number of clusters: %d' % n_clusters_)
+            plt.show()
+            
+    cluster_number = [cluster_number[0]+cluster_number[1],cluster_number[2]+cluster_number[3],cluster_number[4]+cluster_number[5]]
+    cluster_size_mean = [cluster_size_mean[0]+cluster_size_mean[1],cluster_size_mean[2]+cluster_size_mean[3],cluster_size_mean[4]+cluster_size_mean[5]]
+    cluster_size_mean = [i/2 for i in cluster_size_mean]
             
     return cluster_number, cluster_size_mean
             

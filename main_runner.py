@@ -116,7 +116,6 @@ for i in range(pt_number):
     # import f
     pt_3D_data[i,3,0:max_len] = 14-mydata[:,7]
 
-print(pt_3D_data[12,:,:])
 
 # PLOTS
 # work with Controls
@@ -189,7 +188,7 @@ if twoD_plot:
 fit_ctl = np.zeros([ctl_number,2])
 plot_y_n = False
 for i in range(ctl_number):
-    fit_ctl[i,:] = bysect_line(ctl_3D_data[i,:,:], ctl_name[i], plot_y_n) 
+    fit_ctl[i,:] = bysect_line(ctl_3D_data[i,:,:], ctl_name[i], plot_y_n) # NB here fs is already 14-fs
 # Patients
 fit_pt = np.zeros([pt_number,2])
 plot_y_n = False
@@ -209,7 +208,7 @@ mean_of_mean_dist_ctl = np.mean(mean_dist_ctl, axis = 0)
 std_of_mean_dist_ctl = np.std(mean_dist_ctl, axis = 0)
 lower_bound = mean_of_mean_dist_ctl - std_of_mean_dist_ctl
 upper_bound = mean_of_mean_dist_ctl + std_of_mean_dist_ctl
-plot_y_n = False
+plot_y_n = True
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_mean_dist_ctl,lw = 2, color = 'black', label = 'average distance')
@@ -223,7 +222,7 @@ mean_of_diff_ctl = np.mean(above_minus_below, axis = 0)
 std_of_diff_ctl = np.std(above_minus_below, axis = 0)
 lower_bound = mean_of_diff_ctl - std_of_diff_ctl
 upper_bound = mean_of_diff_ctl + std_of_diff_ctl
-plot_y_n = False
+plot_y_n = True
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_diff_ctl,lw = 2, color = 'blue', label = 'average difference')
@@ -245,7 +244,7 @@ mean_of_mean_dist_pt = np.mean(mean_dist_pt, axis = 0)
 std_of_mean_dist_pt = np.std(mean_dist_pt, axis = 0)
 lower_bound = mean_of_mean_dist_pt - std_of_mean_dist_pt
 upper_bound = mean_of_mean_dist_pt + std_of_mean_dist_pt
-plot_y_n = False
+plot_y_n = True
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_mean_dist_pt,lw = 2, color = 'black', label = 'average distance')
@@ -259,7 +258,7 @@ mean_of_diff_pt = np.mean(above_minus_below, axis = 0)
 std_of_diff_pt = np.std(above_minus_below, axis = 0)
 lower_bound = mean_of_diff_pt - std_of_diff_pt
 upper_bound = mean_of_diff_pt + std_of_diff_pt
-plot_y_n = False
+plot_y_n = True
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_diff_pt,lw = 2, color = 'blue', label = 'average difference')
@@ -269,58 +268,67 @@ if plot_y_n:
     ax.set_ylabel('Mean difference')
     ax.set_title('PATIENTS Average difference above-below vs frequency')
 
-# DIVDE THREE RANGES OF FREQUENCIES
+
+
+# DIVDE THREE RANGES OF FREQUENCIES AND COMPUTE NUMBER AND SIZE OF CLUSTERS
 # Controls
 plot_y_n = False
 plot_hist = True
 cluster_num_ctl = np.zeros([ctl_number,3])
 cluster_size_ctl = np.zeros([ctl_number,3])
-for i in range(ctl_number):
-    cluster_num_ctl[i,:], cluster_size_ctl[i,:] = three_f_ranges(ctl_3D_data[i,:,:],ctl_name[i], plot_y_n, eps = 1.5, min_samples = 3)
-if plot_hist:
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.set_title('CONTROLS Number of clusters per frequency')
-    ax1.set_xlabel('Number of clusters')
-    ax1.set_ylabel('Occurrency')
-    ax1.hist(cluster_num_ctl[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-    ax1.hist(cluster_num_ctl[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-    ax1.hist(cluster_num_ctl[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
-    ax1.legend()
-    
-    ax2.set_title('Size of clusters per frequency')
-    ax2.set_xlabel('Size of clusters')
-    ax2.set_ylabel('Occurrency')
-    ax2.hist(cluster_size_ctl[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-    ax2.hist(cluster_size_ctl[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-    ax2.hist(cluster_size_ctl[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
-    ax2.legend()
-    
-# Patients
-plot_y_n = False
-cluster_num_pt = np.zeros([pt_number,3])
-cluster_size_pt = np.zeros([pt_number,3])
-for i in range(pt_number):
-    cluster_num_pt[i,:], cluster_size_pt[i,:] = three_f_ranges(pt_3D_data[i,:,:],pt_name[i], plot_y_n, eps = 1.5, min_samples = 3)
-if plot_hist:
-    fig, (ax1, ax2) = plt.subplots(1, 2)
-    ax1.set_title('PATIENTS Number of clusters per frequency')
-    ax1.set_xlabel('Number of clusters')
-    ax1.set_ylabel('Occurrency')
-    ax1.hist(cluster_num_pt[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-    ax1.hist(cluster_num_pt[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-    ax1.hist(cluster_num_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
-    ax1.legend()
-    
-    ax2.set_title('Size of clusters per frequency')
-    ax2.set_xlabel('Size of clusters')
-    ax2.set_ylabel('Occurrency')
-    ax2.hist(cluster_size_pt[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-    ax2.hist(cluster_size_pt[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-    ax2.hist(cluster_size_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
-    ax2.legend()
+
+eps_loop = np.arange(0.5,2.5,0.5)
+
+for eps in eps_loop:
+    for i in range(ctl_number):
+        cluster_num_ctl[i,:], cluster_size_ctl[i,:] = three_f_ranges(ctl_3D_data[i,:,:],ctl_name[i], fit_ctl[i,:], plot_y_n, eps = eps, min_samples = 3)
+    if plot_hist:
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.set_title('CONTROLS Number of clusters')
+        ax1.set_xlabel('Number of clusters')
+        ax1.set_ylabel('Occurrency')
+        ax1.hist(cluster_num_ctl[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
+        ax1.hist(cluster_num_ctl[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
+        ax1.hist(cluster_num_ctl[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax1.legend()
+        
+        ax2.set_title('Size of clusters - Epsilon = {}'.format(eps))
+        ax2.set_xlabel('Size of clusters')
+        ax2.set_ylabel('Occurrency')
+        ax2.hist(cluster_size_ctl[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
+        ax2.hist(cluster_size_ctl[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
+        ax2.hist(cluster_size_ctl[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax2.legend()
+        
+    # Patients
+    plot_y_n = False
+    cluster_num_pt = np.zeros([pt_number,3])
+    cluster_size_pt = np.zeros([pt_number,3])
+    for i in range(pt_number):
+        cluster_num_pt[i,:], cluster_size_pt[i,:] = three_f_ranges(pt_3D_data[i,:,:],pt_name[i], fit_pt[i,:], plot_y_n, eps = eps, min_samples = 3)
+    if plot_hist:
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.set_title('PATIENTS Number of clusters')
+        ax1.set_xlabel('Number of clusters')
+        ax1.set_ylabel('Occurrency')
+        ax1.hist(cluster_num_pt[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
+        ax1.hist(cluster_num_pt[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
+        ax1.hist(cluster_num_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax1.legend()
+        
+        ax2.set_title('Size of clusters - Epsilon = {}'.format(eps))
+        ax2.set_xlabel('Size of clusters')
+        ax2.set_ylabel('Occurrency')
+        ax2.hist(cluster_size_pt[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
+        ax2.hist(cluster_size_pt[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
+        ax2.hist(cluster_size_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax2.legend()
+        
+
+
     
 
 
 
 
-# sk learn rich regression
+#sk learn rich regression
