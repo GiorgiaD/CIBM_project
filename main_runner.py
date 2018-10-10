@@ -6,8 +6,9 @@ Created on Tue Sep 25 15:36:12 2018
 """
 
 from import_function import *
+import scipy.io
 
-ctl_list = ['CTL1_tono_voi_onRef_PAC_RH.txt','CTL1_tono_voi_onRef_PAC_LH.txt',
+ctl_list_norm = ['CTL1_tono_voi_onRef_PAC_RH.txt','CTL1_tono_voi_onRef_PAC_LH.txt',
              'CTL2_tono_voi_onRef_PAC_RH.txt','CTL2_tono_voi_onRef_PAC_LH.txt',
              'CTL3_tono_voi_onRef_PAC_RH.txt','CTL3_tono_voi_onRef_PAC_LH.txt',
              'CTL4_tono_voi_onRef_PAC_RH.txt','CTL4_tono_voi_onRef_PAC_LH.txt',
@@ -20,7 +21,7 @@ ctl_list = ['CTL1_tono_voi_onRef_PAC_RH.txt','CTL1_tono_voi_onRef_PAC_LH.txt',
              'CTL12_tono_voi_onRef_PAC_RH.txt','CTL12_tono_voi_onRef_PAC_LH.txt',
              'CTL13_tono_voi_onRef_PAC_RH.txt','CTL13_tono_voi_onRef_PAC_LH.txt']
 
-pt_list = ['PT1_tono_voi_onRef_PAC_RH.txt','PT1_tono_voi_onRef_PAC_LH.txt',
+pt_list_norm = ['PT1_tono_voi_onRef_PAC_RH.txt','PT1_tono_voi_onRef_PAC_LH.txt',
            'PT2_tono_voi_onRef_PAC_RH.txt','PT2_tono_voi_onRef_PAC_LH.txt',
            'PT3_tono_voi_onRef_PAC_RH.txt','PT3_tono_voi_onRef_PAC_LH.txt',
            'PT4_tono_voi_onRef_PAC_RH.txt','PT4_tono_voi_onRef_PAC_LH.txt',
@@ -44,6 +45,81 @@ pt_list = ['PT1_tono_voi_onRef_PAC_RH.txt','PT1_tono_voi_onRef_PAC_LH.txt',
            'PT22_tono_voi_onRef_PAC_RH.txt','PT22_tono_voi_onRef_PAC_LH.txt',
            'PT23_tono_voi_onRef_PAC_RH.txt','PT23_tono_voi_onRef_PAC_LH.txt',
            'PT24_tono_voi_onRef_PAC_RH.txt','PT24_tono_voi_onRef_PAC_LH.txt']
+
+ctl_list_full = ['CTL1_tono_poi_PAC_RH', 'CTL1_tono_poi_PAC_LH',
+                 'CTL2_tono_poi_PAC_RH', 'CTL2_tono_poi_PAC_LH',
+                 'CTL3_tono_poi_PAC_RH', 'CTL3_tono_poi_PAC_LH',
+                 'CTL4_tono_poi_PAC_RH', 'CTL4_tono_poi_PAC_LH',
+                 'CTL5_tono_poi_PAC_RH', 'CTL5_tono_poi_PAC_LH',
+                 'CTL6_tono_poi_PAC_RH', 'CTL6_tono_poi_PAC_LH',
+                 'CTL7_tono_poi_PAC_RH', 'CTL7_tono_poi_PAC_LH',
+                 'CTL8_tono_poi_PAC_RH', 'CTL8_tono_poi_PAC_LH',
+                 'CTL9_tono_poi_PAC_RH', 'CTL9_tono_poi_PAC_LH',
+                 'CTL10_tono_poi_PAC_RH', 'CTL10_tono_poi_PAC_LH',
+                 'CTL12_tono_poi_PAC_RH', 'CTL12_tono_poi_PAC_LH']
+
+pt_list_full = ['PT1_tono_poi_PAC_RH', 'PT1_tono_poi_PAC_LH',
+                'PT2_tono_poi_PAC_RH', 'PT2_tono_poi_PAC_RH',
+                'PT3_tono_poi_PAC_RH', 'PT3_tono_poi_PAC_RH',
+                'PT4_tono_poi_PAC_RH', 'PT4_tono_poi_PAC_LH',
+                'PT5_tono_poi_PAC_RH', 'PT5_tono_poi_PAC_LH',
+                'PT6_tono_poi_PAC_LH', 'PT6_tono_poi_PAC_LH',
+                'PT7_tono_poi_PAC_LH', 'PT7_tono_poi_PAC_LH',
+                'PT8_tono_poi_PAC_RH', 'PT8_tono_poi_PAC_LH',
+                'PT9_tono_poi_PAC_RH', 'PT9_tono_poi_PAC_LH',
+                'PT10_tono_poi_PAC_LH', 'PT10_tono_poi_PAC_LH',
+                'PT11_tono_poi_PAC_RH', 'PT11_tono_poi_PAC_LH',
+                'PT12_tono_poi_PAC_RH', 'PT12_tono_poi_PAC_LH',
+                'PT13_tono_poi_PAC_RH', 'PT13_tono_poi_PAC_LH',
+                'PT14_tono_poi_PAC_LH', 'PT14_tono_poi_PAC_LH',
+                'PT15_tono_poi_PAC_RH', 'PT15_tono_poi_PAC_LH',
+                'PT16_tono_poi_PAC_RH', 'PT16_tono_poi_PAC_LH',
+                'PT17_tono_poi_PAC_RH', 'PT17_tono_poi_PAC_LH',
+                'PT18_tono_poi_PAC_RH', 'PT18_tono_poi_PAC_RH',
+                'PT19_tono_poi_PAC_LH', 'PT19_tono_poi_PAC_LH',
+                'PT20_tono_poi_PAC_RH', 'PT20_tono_poi_PAC_LH',
+                'PT21_tono_poi_PAC_RH', 'PT21_tono_poi_PAC_RH',
+                'PT22_tono_poi_PAC_RH', 'PT22_tono_poi_PAC_RH',
+                'PT23_tono_poi_PAC_LH', 'PT23_tono_poi_PAC_LH',
+                'PT24_tono_poi_PAC_RH', 'PT24_tono_poi_PAC_RH'] # careful we're missing PT2LH,PT3LH,PT6RH,PT7RH,PT10RH,PT14RH,PT18LH,PT19RH,PT21LH,PT22LH,PT23RH,PT24LH
+
+ctl_anat = ['CTL1_anat_poi_PAC_RH', 'CTL1_anat_poi_PAC_LH',
+            'CTL2_anat_poi_PAC_RH', 'CTL2_anat_poi_PAC_LH',
+            'CTL3_anat_poi_PAC_RH', 'CTL3_anat_poi_PAC_LH',
+            'CTL4_anat_poi_PAC_RH', 'CTL4_anat_poi_PAC_LH',
+            'CTL5_anat_poi_PAC_RH', 'CTL5_anat_poi_PAC_LH',
+            'CTL6_anat_poi_PAC_RH', 'CTL6_anat_poi_PAC_LH',
+            'CTL7_anat_poi_PAC_RH', 'CTL7_anat_poi_PAC_LH',
+            'CTL8_anat_poi_PAC_RH', 'CTL8_anat_poi_PAC_LH',
+            'CTL9_anat_poi_PAC_RH', 'CTL9_anat_poi_PAC_LH',
+            'CTL10_anat_poi_PAC_RH', 'CTL10_anat_poi_PAC_LH',
+            'CTL11_anat_poi_PAC_RH', 'CTL12_anat_poi_PAC_LH']
+
+pt_anat = ['PT1_anat_poi_PAC_RH', 'PT1_anat_poi_PAC_LH',
+           'PT2_anat_poi_PAC_RH', 'PT2_anat_poi_PAC_RH',
+           'PT3_anat_poi_PAC_RH', 'PT3_anat_poi_PAC_LH',
+           'PT4_anat_poi_PAC_RH', 'PT4_anat_poi_PAC_LH',
+           'PT5_anat_poi_PAC_RH', 'PT5_anat_poi_PAC_LH',
+           'PT6_anat_poi_PAC_RH', 'PT6_anat_poi_PAC_LH',
+           'PT7_anat_poi_PAC_RH', 'PT7_anat_poi_PAC_LH',
+           'PT8_anat_poi_PAC_RH', 'PT8_anat_poi_PAC_LH',
+           'PT9_anat_poi_PAC_RH', 'PT9_anat_poi_PAC_LH',
+           'PT10_anat_poi_PAC_RH', 'PT10_anat_poi_PAC_LH',
+           'PT11_anat_poi_PAC_RH', 'PT11_anat_poi_PAC_LH',
+           'PT12_anat_poi_PAC_RH', 'PT12_anat_poi_PAC_LH',
+           'PT13_anat_poi_PAC_RH', 'PT13_anat_poi_PAC_LH',
+           'PT14_anat_poi_PAC_RH', 'PT14_anat_poi_PAC_LH',
+           'PT15_anat_poi_PAC_RH', 'PT15_anat_poi_PAC_LH',
+           'PT16_anat_poi_PAC_RH', 'PT16_anat_poi_PAC_LH',
+           'PT17_anat_poi_PAC_RH', 'PT17_anat_poi_PAC_LH',
+           'PT18_anat_poi_PAC_RH', 'PT18_anat_poi_PAC_LH',
+           'PT19_anat_poi_PAC_RH', 'PT19_anat_poi_PAC_LH',
+           'PT20_anat_poi_PAC_RH', 'PT20_anat_poi_PAC_LH',
+           'PT21_anat_poi_PAC_RH', 'PT21_anat_poi_PAC_LH',
+           'PT22_anat_poi_PAC_RH', 'PT22_anat_poi_PAC_LH',
+           'PT23_anat_poi_PAC_RH', 'PT23_anat_poi_PAC_LH',
+           'PT24_anat_poi_PAC_RH', 'PT24_anat_poi_PAC_LH']  # careful we're missing PT2LH
+
 
 ctl_name = ['Control 1 - RH','Control 1 - LH',
             'Control 2 - RH','Control 2 - LH',
@@ -83,13 +159,28 @@ pt_name = ['Patient 1 - RH', 'Patient 1 - LH',
            'Patient 23 - RH', 'Patient 23 - LH',
            'Patient 24 - RH', 'Patient 24 - LH']
 
+use_norm_data = False
+
+if use_norm_data:  
+    ctl_list = ctl_list_norm
+    pt_list = pt_list_norm
+else: 
+    ctl_list = ctl_list_full
+    pt_list = pt_list_full
+
 # IMPORT DATA
 # work with Controls
 ctl_number = np.shape(ctl_list)[0]
-ctl_3D_data = np.ones([ctl_number,4,1000])*(-2)
-
+if use_norm_data:
+    ctl_3D_data = np.ones([ctl_number,4,1000])*(-2)
+else:
+    ctl_3D_data = np.ones([ctl_number,4,1800])*(-2)
+    
 for i in range(ctl_number):
-    mydata = import_function(ctl_list[i])
+    if use_norm_data:    
+        mydata = import_function(ctl_list[i])
+    else:
+        mydata = scipy.io.loadmat(ctl_list[i])['data']
     max_len = np.shape(mydata)[0]
     # import x
     ctl_3D_data[i,0,0:max_len] = mydata[:,1]
@@ -102,10 +193,16 @@ for i in range(ctl_number):
     
 # work with Patients
 pt_number = np.shape(pt_list)[0]
-pt_3D_data = np.ones([pt_number,4,1000])*(-2)
+if use_norm_data:
+    pt_3D_data = np.ones([pt_number,4,1000])*(-2)
+else:
+    pt_3D_data = np.ones([pt_number,4,1800])*(-2)
 
 for i in range(pt_number):
-    mydata = import_function(pt_list[i])
+    if use_norm_data:    
+        mydata = import_function(pt_list[i])
+    else:
+        mydata = scipy.io.loadmat(pt_list[i])['data']
     max_len = np.shape(mydata)[0]
     # import x
     pt_3D_data[i,0,0:max_len] = mydata[:,1]
@@ -119,8 +216,8 @@ for i in range(pt_number):
 
 # PLOTS
 # work with Controls
-how_many_plots = 'plot_LH'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
-plot_until = 6
+how_many_plots = 'plot_until'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
+plot_until = 24
 if how_many_plots == 'plot_all':
     tot_plot = np.arange(np.shape(ctl_list)[0])
 elif how_many_plots == 'plot_RH':
@@ -130,8 +227,10 @@ elif how_many_plots == 'plot_LH':
 elif how_many_plots == 'plot_until':
     tot_plot = np.arange(0,plot_until)
     
-threeD_plot = False
+threeD_plot = True
 twoD_plot = False
+
+
 
 #tot_plot = np.arange(0,8,2)
  # 3d interactive plots   
@@ -139,7 +238,10 @@ if threeD_plot:
     for i in tot_plot:
         file_name = ctl_list[i]
         file_title = ctl_name[i]
-        my_data = import_function(file_name)
+        if use_norm_data:    
+            my_data = import_function(ctl_list[i])
+        else:
+            my_data = scipy.io.loadmat(ctl_list[i])['data']
         plot_tono_map(my_data, file_title)
 
 # 2d subplots
@@ -147,8 +249,13 @@ if twoD_plot:
     for i in tot_plot:
         file_name = ctl_list[i]
         file_title = ctl_name[i]
-        my_data = import_function(file_name)
+        if use_norm_data:    
+            my_data = import_function(ctl_list[i])
+        else:
+            my_data = scipy.io.loadmat(ctl_list[i])['data']
         plot_2d(my_data,file_title)
+        
+'''        
         
 # work with Patients
 how_many_plots = 'plot_LH'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
@@ -171,7 +278,10 @@ if threeD_plot:
     for i in tot_plot:
         file_name = pt_list[i]
         file_title = pt_name[i]
-        my_data = import_function(file_name)
+        if use_norm_data:    
+            my_data = import_function(pt_list[i])
+        else:
+            my_data = scipy.io.loadmat(pt_list[i])['data']
         plot_tono_map(my_data, file_title)
 
 # 2d subplots
@@ -179,7 +289,10 @@ if twoD_plot:
     for i in tot_plot:
         file_name = pt_list[i]
         file_title = pt_name[i]
-        my_data = import_function(file_name)
+        if use_norm_data:    
+            my_data = import_function(pt_list[i])
+        else:
+            my_data = scipy.io.loadmat(pt_list[i])['data']
         plot_2d(my_data,file_title)
 
 
@@ -327,7 +440,7 @@ for eps in eps_loop:
 
 
     
-
+'''
 
 
 
