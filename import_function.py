@@ -76,7 +76,7 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
     #plt.plot(xs_high,ys_high,'o')
     coeff = np.polyfit(xs_high,ys_high,1)
     
-    x_fit = np.arange(np.min(xs),np.max(xs),0.01)
+    x_fit = np.arange(np.nanmin(xs),np.nanmax(xs),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
     y_fit = x_fit*coeff[0]+coeff[1]
     uno = [1]*len(xs_red)
     due = [2]*len(xs_bordeaux)

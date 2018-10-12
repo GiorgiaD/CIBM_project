@@ -8,6 +8,8 @@ Created on Tue Sep 25 15:36:12 2018
 from import_function import *
 import scipy.io
 
+plt.close('all')
+
 ctl_list_norm = ['CTL1_tono_voi_onRef_PAC_RH.txt','CTL1_tono_voi_onRef_PAC_LH.txt',
              'CTL2_tono_voi_onRef_PAC_RH.txt','CTL2_tono_voi_onRef_PAC_LH.txt',
              'CTL3_tono_voi_onRef_PAC_RH.txt','CTL3_tono_voi_onRef_PAC_LH.txt',
@@ -217,7 +219,7 @@ for i in range(pt_number):
 # PLOTS
 # work with Controls
 how_many_plots = 'plot_until'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
-plot_until = 24
+plot_until = 18
 if how_many_plots == 'plot_all':
     tot_plot = np.arange(np.shape(ctl_list)[0])
 elif how_many_plots == 'plot_RH':
@@ -227,7 +229,7 @@ elif how_many_plots == 'plot_LH':
 elif how_many_plots == 'plot_until':
     tot_plot = np.arange(0,plot_until)
     
-threeD_plot = True
+threeD_plot = False
 twoD_plot = False
 
 
@@ -254,11 +256,10 @@ if twoD_plot:
         else:
             my_data = scipy.io.loadmat(ctl_list[i])['data']
         plot_2d(my_data,file_title)
-        
-'''        
+              
         
 # work with Patients
-how_many_plots = 'plot_LH'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
+how_many_plots = 'plot_all'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
 plot_until = 6
 if how_many_plots == 'plot_all':
     tot_plot = np.arange(np.shape(pt_list)[0])
@@ -296,6 +297,7 @@ if twoD_plot:
         plot_2d(my_data,file_title)
 
 
+
 # BYSECTING LINE - FIND AND PLOT
 # Controls
 fit_ctl = np.zeros([ctl_number,2])
@@ -306,6 +308,7 @@ for i in range(ctl_number):
 fit_pt = np.zeros([pt_number,2])
 plot_y_n = False
 for i in range(pt_number):
+    print(i)
     fit_pt[i,:] = bysect_line(pt_3D_data[i,:,:], pt_name[i], plot_y_n)
     
 # AVERAGE DISTANCE AND NUMBER OF VOXELS ABOVE AND BELOW
@@ -440,7 +443,7 @@ for eps in eps_loop:
 
 
     
-'''
+
 
 
 
