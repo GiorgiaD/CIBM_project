@@ -308,7 +308,6 @@ for i in range(ctl_number):
 fit_pt = np.zeros([pt_number,2])
 plot_y_n = False
 for i in range(pt_number):
-    print(i)
     fit_pt[i,:] = bysect_line(pt_3D_data[i,:,:], pt_name[i], plot_y_n)
     
 # AVERAGE DISTANCE AND NUMBER OF VOXELS ABOVE AND BELOW
@@ -338,7 +337,7 @@ mean_of_diff_ctl = np.mean(above_minus_below, axis = 0)
 std_of_diff_ctl = np.std(above_minus_below, axis = 0)
 lower_bound = mean_of_diff_ctl - std_of_diff_ctl
 upper_bound = mean_of_diff_ctl + std_of_diff_ctl
-plot_y_n = True
+plot_y_n = False
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_diff_ctl,lw = 2, color = 'blue', label = 'average difference')
@@ -360,7 +359,7 @@ mean_of_mean_dist_pt = np.mean(mean_dist_pt, axis = 0)
 std_of_mean_dist_pt = np.std(mean_dist_pt, axis = 0)
 lower_bound = mean_of_mean_dist_pt - std_of_mean_dist_pt
 upper_bound = mean_of_mean_dist_pt + std_of_mean_dist_pt
-plot_y_n = True
+plot_y_n = False
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_mean_dist_pt,lw = 2, color = 'black', label = 'average distance')
@@ -374,7 +373,7 @@ mean_of_diff_pt = np.mean(above_minus_below, axis = 0)
 std_of_diff_pt = np.std(above_minus_below, axis = 0)
 lower_bound = mean_of_diff_pt - std_of_diff_pt
 upper_bound = mean_of_diff_pt + std_of_diff_pt
-plot_y_n = True
+plot_y_n = False
 if plot_y_n:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_diff_pt,lw = 2, color = 'blue', label = 'average difference')
@@ -389,7 +388,7 @@ if plot_y_n:
 # DIVDE THREE RANGES OF FREQUENCIES AND COMPUTE NUMBER AND SIZE OF CLUSTERS
 # Controls
 plot_y_n = False
-plot_hist = True
+plot_hist = False
 cluster_num_ctl = np.zeros([ctl_number,3])
 cluster_size_ctl = np.zeros([ctl_number,3])
 
@@ -440,7 +439,18 @@ for eps in eps_loop:
         ax2.hist(cluster_size_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
         ax2.legend()
         
+# MATRIXING
+# Work with Controls
+plot_y_n = True
+if use_norm_data:
+    pixels = 35
+else:
+    pixels = 24
+for i in range(ctl_number):
+    ctl_mat = matrixing(ctl_3D_data[i,:,:], ctl_name[i], pixels, plot_y_n)
 
+for i in range(pt_number):
+    pt_mat = matrixing(pt_3D_data[i,:,:], pt_name[i], pixels, plot_y_n)
 
     
 

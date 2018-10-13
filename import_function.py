@@ -321,7 +321,40 @@ def three_f_ranges(data,title, coeff_w, plot_y_n = False, eps = 1.5, min_samples
             
     return cluster_number, cluster_size_mean
             
-            
-            
+
+def matrixing(data, title, pixels, plot_y_n):
+    xs,ys,zs,fs = organize_data(data) 
+
+    min_xs = np.nanmin(xs)
+    max_xs = np.nanmax(xs)
+    min_ys = np.nanmin(ys)
+    max_ys = np.nanmax(ys)
+    
+    xs_array = np.linspace(min_xs,max_xs,pixels)
+    ys_array = np.linspace(min_ys,max_ys,pixels)
+    
+    # initialize the table
+    table = np.zeros([pixels,pixels])
+    keep_trace = np.zeros_like(table)
+    # fill the table with the mean of the frequency at that location
+    for k in range(len(xs)):
+        idx_x = (np.abs(xs_array-xs[k])).argmin()
+        idx_y = (np.abs(ys_array-ys[k])).argmin()
+        table[idx_x,idx_y] += fs[k]
+        keep_trace[idx_x,idx_y] += 1
+    for i in range(pixels):   # divide by the number of frequencies added, or if none, substitute with -2 to indicate no pixels there
+        for j in range(pixels):
+            if keep_trace[i,j] != 0:
+                table[i,j] = table[i,j]/keep_trace[i,j]
+            else:
+                table[i,j] = -2
+                
+    if plot_y_n:
+        plt.figure()
+        plt.imshow(table,cmap = 'jet')
+        plt.title(title)
+        plt.show()
+
+    return table        
             
             
