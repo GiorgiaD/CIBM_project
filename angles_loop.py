@@ -99,7 +99,7 @@ for i in range(ctl_number):
     fs = data[3,0:until] 
     
     # bisecting line
-    coeff_w = bysect_line(data, 'Control 8', False) 
+    coeff_w = bysect_line(data, 'Control', False) 
     
     # useful function
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
@@ -211,8 +211,8 @@ for i in range(ctl_number):
                         ys_max_below = np.concatenate((ys_max_below,ys_high[j]))
                     max_dist_below = np.max([dist,max_dist_below])
                     
-                    
-    a = np.array([xs_max_above, ys_max_above,0.])
+    # compute the angle between the three points                
+    a = np.array([xs_max_above, ys_max_above,0.]) # zero is added for 3D coordinate
     b = np.array([xs_min, ys_min, 0.])
     c = np.array([xs_max_below, ys_max_below, 0.])
     
@@ -236,13 +236,13 @@ for i in range(ctl_number):
         plt.show()
 
 plt.figure()
-plt.hist(angle_ctl)
+plt.hist(angle_ctl, bins = 16, alpha = 0.7, density = False, stacked = False)
 plt.title('CONTROLS')
 plt.xlabel('Angle')
 plt.ylabel('Occurrency')
 
 
-plot_y_n = True
+plot_y_n = False
 for i in range(pt_number):
     data = pt_3D_data[i,:,:]
     until = list(data[3,:]).index(-2)
@@ -389,7 +389,13 @@ for i in range(pt_number):
         plt.show()
 
 plt.figure()
-plt.hist(angle_pt)
+plt.hist(angle_pt, bins = 16, alpha = 0.7, density = False, stacked = False)
 plt.title('PATIENTS')
+plt.xlabel('Angle')
+plt.ylabel('Occurrency')
+
+plt.figure()
+plt.hist([angle_ctl, angle_pt], bins = 16, alpha = 0.4, label = ['Controls','Patients'])
+plt.title('CONTROLS VS PATIENTS')
 plt.xlabel('Angle')
 plt.ylabel('Occurrency')

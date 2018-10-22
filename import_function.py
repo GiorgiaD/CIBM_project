@@ -38,6 +38,8 @@ def plot_2d(mydata, title):
     ax.scatter(xs,ys, c = fs, cmap = 'jet')
     plt.title(title)
     plt.show()
+    output_dir = "../figures/all_maps"
+    fig.savefig('{}/{}.png'.format(output_dir,title))
     
 def organize_data(data):
     until = list(data[3,:]).index(-2)
@@ -45,10 +47,11 @@ def organize_data(data):
     ys = data[1,0:until]
     zs = data[2,0:until]
     fs = data[3,0:until] 
-    return xs,ys,zs,fs
+    an = data[4,0:until]
+    return xs,ys,zs,fs,an
     
 def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix for one scan with fs already 14-fs
-    xs,ys,zs,fs = organize_data(data) 
+    xs,ys,zs,fs,an = organize_data(data) 
     
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
 
@@ -101,7 +104,7 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
     
 def mean_dist_b_line(data, title, coeff_w, plot_y_n = False):
     # set the data
-    xs,ys,zs,fs = organize_data(data)
+    xs,ys,zs,fs,an = organize_data(data)
     # useful function
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
     # two points on the line
@@ -164,7 +167,7 @@ def mean_dist_b_line(data, title, coeff_w, plot_y_n = False):
 
 def three_f_ranges(data,title, coeff_w, plot_y_n = False, eps = 1.5, min_samples = 3):
     # set the data
-    xs,ys,zs,fs = organize_data(data)
+    xs,ys,zs,fs,an = organize_data(data)
     
     # useful function
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
@@ -323,7 +326,7 @@ def three_f_ranges(data,title, coeff_w, plot_y_n = False, eps = 1.5, min_samples
             
 
 def matrixing(data, title, pixels, plot_y_n):
-    xs,ys,zs,fs = organize_data(data) 
+    xs,ys,zs,fs,an = organize_data(data) 
 
     min_xs = np.nanmin(xs)
     max_xs = np.nanmax(xs)
@@ -347,7 +350,7 @@ def matrixing(data, title, pixels, plot_y_n):
             if keep_trace[i,j] != 0:
                 table[i,j] = table[i,j]/keep_trace[i,j]
             else:
-                table[i,j] = -2
+                table[i,j] = np.nan
                 
     if plot_y_n:
         plt.figure()

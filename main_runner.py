@@ -95,32 +95,33 @@ ctl_anat = ['CTL1_anat_poi_PAC_RH', 'CTL1_anat_poi_PAC_LH',
             'CTL8_anat_poi_PAC_RH', 'CTL8_anat_poi_PAC_LH',
             'CTL9_anat_poi_PAC_RH', 'CTL9_anat_poi_PAC_LH',
             'CTL10_anat_poi_PAC_RH', 'CTL10_anat_poi_PAC_LH',
-            'CTL11_anat_poi_PAC_RH', 'CTL12_anat_poi_PAC_LH']
+            'CTL12_anat_poi_PAC_RH', 'CTL12_anat_poi_PAC_LH']
 
 pt_anat = ['PT1_anat_poi_PAC_RH', 'PT1_anat_poi_PAC_LH',
            'PT2_anat_poi_PAC_RH', 'PT2_anat_poi_PAC_RH',
-           'PT3_anat_poi_PAC_RH', 'PT3_anat_poi_PAC_LH',
+           'PT3_anat_poi_PAC_RH', 'PT3_anat_poi_PAC_RH',
            'PT4_anat_poi_PAC_RH', 'PT4_anat_poi_PAC_LH',
            'PT5_anat_poi_PAC_RH', 'PT5_anat_poi_PAC_LH',
-           'PT6_anat_poi_PAC_RH', 'PT6_anat_poi_PAC_LH',
-           'PT7_anat_poi_PAC_RH', 'PT7_anat_poi_PAC_LH',
+           'PT6_anat_poi_PAC_lH', 'PT6_anat_poi_PAC_LH',
+           'PT7_anat_poi_PAC_LH', 'PT7_anat_poi_PAC_LH',
            'PT8_anat_poi_PAC_RH', 'PT8_anat_poi_PAC_LH',
            'PT9_anat_poi_PAC_RH', 'PT9_anat_poi_PAC_LH',
-           'PT10_anat_poi_PAC_RH', 'PT10_anat_poi_PAC_LH',
+           'PT10_anat_poi_PAC_LH', 'PT10_anat_poi_PAC_LH',
            'PT11_anat_poi_PAC_RH', 'PT11_anat_poi_PAC_LH',
            'PT12_anat_poi_PAC_RH', 'PT12_anat_poi_PAC_LH',
            'PT13_anat_poi_PAC_RH', 'PT13_anat_poi_PAC_LH',
-           'PT14_anat_poi_PAC_RH', 'PT14_anat_poi_PAC_LH',
+           'PT14_anat_poi_PAC_LH', 'PT14_anat_poi_PAC_LH',
            'PT15_anat_poi_PAC_RH', 'PT15_anat_poi_PAC_LH',
            'PT16_anat_poi_PAC_RH', 'PT16_anat_poi_PAC_LH',
            'PT17_anat_poi_PAC_RH', 'PT17_anat_poi_PAC_LH',
-           'PT18_anat_poi_PAC_RH', 'PT18_anat_poi_PAC_LH',
-           'PT19_anat_poi_PAC_RH', 'PT19_anat_poi_PAC_LH',
+           'PT18_anat_poi_PAC_RH', 'PT18_anat_poi_PAC_RH',
+           'PT19_anat_poi_PAC_LH', 'PT19_anat_poi_PAC_LH',
            'PT20_anat_poi_PAC_RH', 'PT20_anat_poi_PAC_LH',
-           'PT21_anat_poi_PAC_RH', 'PT21_anat_poi_PAC_LH',
-           'PT22_anat_poi_PAC_RH', 'PT22_anat_poi_PAC_LH',
-           'PT23_anat_poi_PAC_RH', 'PT23_anat_poi_PAC_LH',
-           'PT24_anat_poi_PAC_RH', 'PT24_anat_poi_PAC_LH']  # careful we're missing PT2LH
+           'PT21_anat_poi_PAC_RH', 'PT21_anat_poi_PAC_RH',
+           'PT22_anat_poi_PAC_RH', 'PT22_anat_poi_PAC_RH',
+           'PT23_anat_poi_PAC_LH', 'PT23_anat_poi_PAC_LH',
+           'PT24_anat_poi_PAC_RH', 'PT24_anat_poi_PAC_RH']  
+# careful we're missing PT2LH,PT3LH,PT6RH,PT7RH,PT10RH,PT14RH,PT18LH,PT19RH,PT21LH,PT22LH,PT23RH,PT24LH
 
 
 ctl_name = ['Control 1 - RH','Control 1 - LH',
@@ -161,7 +162,31 @@ pt_name = ['Patient 1 - RH', 'Patient 1 - LH',
            'Patient 23 - RH', 'Patient 23 - LH',
            'Patient 24 - RH', 'Patient 24 - LH']
 
+# make your choice!
 use_norm_data = False
+threeD_plot_ctl = False
+twoD_plot_ctl = False
+threeD_plot_pt = False
+twoD_plot_pt = False
+plot_y_n_fit_ctl = False
+plot_y_n_fit_pt = False
+plot_y_n_dist_each_ctl = False
+plot_y_n_dist_ave_ctl = False
+plot_y_n_dist_each_pt = False
+plot_y_n_dist_ave_pt = False
+plot_y_n_voxnum_ctl = False
+plot_y_n_voxnum_pt = False
+plot_y_n_cluster_map_ctl = False
+plot_y_n_cluster_map_pt = False
+plot_y_n_cluster_hist_ctl = False
+plot_y_n_cluster_hist_pt = False
+plot_y_n_matrizing_ctl = False
+plot_y_n_matrizing_pt = False
+plot_y_n_anat_ctl = True
+plot_y_n_anat_pt = False
+save_figures = True
+output_dir = "../figures/all_maps"
+
 
 if use_norm_data:  
     ctl_list = ctl_list_norm
@@ -169,20 +194,24 @@ if use_norm_data:
 else: 
     ctl_list = ctl_list_full
     pt_list = pt_list_full
-
+    
 # IMPORT DATA
 # work with Controls
 ctl_number = np.shape(ctl_list)[0]
 if use_norm_data:
-    ctl_3D_data = np.ones([ctl_number,4,1000])*(-2)
+    ctl_3D_data = np.ones([ctl_number,5,1000])*(-2) # less voxels for the normalized scan
 else:
-    ctl_3D_data = np.ones([ctl_number,4,1800])*(-2)
+    ctl_3D_data = np.ones([ctl_number,5,1800])*(-2)  # more voxels for the original scan
     
 for i in range(ctl_number):
+    # tonotopy
     if use_norm_data:    
         mydata = import_function(ctl_list[i])
     else:
         mydata = scipy.io.loadmat(ctl_list[i])['data']
+    # anatomy
+    mydata_anat = scipy.io.loadmat(ctl_anat[i])['data']
+    
     max_len = np.shape(mydata)[0]
     # import x
     ctl_3D_data[i,0,0:max_len] = mydata[:,1]
@@ -192,20 +221,27 @@ for i in range(ctl_number):
     ctl_3D_data[i,2,0:max_len] = mydata[:,3]
     # import f
     ctl_3D_data[i,3,0:max_len] = 14-mydata[:,7]
+    # import anatomy
+    ctl_3D_data[i,4,0:max_len] = mydata_anat[:,7]
     
 # work with Patients
 pt_number = np.shape(pt_list)[0]
 if use_norm_data:
-    pt_3D_data = np.ones([pt_number,4,1000])*(-2)
+    pt_3D_data = np.ones([pt_number,5,1000])*(-2)
 else:
-    pt_3D_data = np.ones([pt_number,4,1800])*(-2)
+    pt_3D_data = np.ones([pt_number,5,1800])*(-2)
 
 for i in range(pt_number):
+    # tonotopy
     if use_norm_data:    
         mydata = import_function(pt_list[i])
     else:
         mydata = scipy.io.loadmat(pt_list[i])['data']
+    # anatomy
+    mydata_anat = scipy.io.loadmat(pt_anat[i])['data']
+    
     max_len = np.shape(mydata)[0]
+    
     # import x
     pt_3D_data[i,0,0:max_len] = mydata[:,1]
     # import y
@@ -214,11 +250,12 @@ for i in range(pt_number):
     pt_3D_data[i,2,0:max_len] = mydata[:,3]
     # import f
     pt_3D_data[i,3,0:max_len] = 14-mydata[:,7]
-
+    # import anatomy
+    pt_3D_data[i,4,0:max_len] = mydata_anat[:,7]
 
 # PLOTS
 # work with Controls
-how_many_plots = 'plot_until'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
+how_many_plots = 'plot_all'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
 plot_until = 18
 if how_many_plots == 'plot_all':
     tot_plot = np.arange(np.shape(ctl_list)[0])
@@ -229,14 +266,10 @@ elif how_many_plots == 'plot_LH':
 elif how_many_plots == 'plot_until':
     tot_plot = np.arange(0,plot_until)
     
-threeD_plot = False
-twoD_plot = False
-
-
 
 #tot_plot = np.arange(0,8,2)
  # 3d interactive plots   
-if threeD_plot:
+if threeD_plot_ctl:
     for i in tot_plot:
         file_name = ctl_list[i]
         file_title = ctl_name[i]
@@ -247,7 +280,7 @@ if threeD_plot:
         plot_tono_map(my_data, file_title)
 
 # 2d subplots
-if twoD_plot:
+if twoD_plot_ctl:
     for i in tot_plot:
         file_name = ctl_list[i]
         file_title = ctl_name[i]
@@ -256,7 +289,7 @@ if twoD_plot:
         else:
             my_data = scipy.io.loadmat(ctl_list[i])['data']
         plot_2d(my_data,file_title)
-              
+        
         
 # work with Patients
 how_many_plots = 'plot_all'  # choose among 'plot_all','plot_RH','plot_LH','plot_until'
@@ -270,12 +303,10 @@ elif how_many_plots == 'plot_LH':
 elif how_many_plots == 'plot_until':
     tot_plot = np.arange(0,plot_until)
     
-threeD_plot = False
-twoD_plot = False
 
 #tot_plot = np.arange(0,8,2)
  # 3d interactive plots   
-if threeD_plot:
+if threeD_plot_pt:
     for i in tot_plot:
         file_name = pt_list[i]
         file_title = pt_name[i]
@@ -286,7 +317,7 @@ if threeD_plot:
         plot_tono_map(my_data, file_title)
 
 # 2d subplots
-if twoD_plot:
+if twoD_plot_pt:
     for i in tot_plot:
         file_name = pt_list[i]
         file_title = pt_name[i]
@@ -301,30 +332,28 @@ if twoD_plot:
 # BYSECTING LINE - FIND AND PLOT
 # Controls
 fit_ctl = np.zeros([ctl_number,2])
-plot_y_n = False
 for i in range(ctl_number):
-    fit_ctl[i,:] = bysect_line(ctl_3D_data[i,:,:], ctl_name[i], plot_y_n) # NB here fs is already 14-fs
+    fit_ctl[i,:] = bysect_line(ctl_3D_data[i,:,:], ctl_name[i], plot_y_n_fit_ctl) # NB here fs is already 14-fs
+
 # Patients
 fit_pt = np.zeros([pt_number,2])
-plot_y_n = False
 for i in range(pt_number):
-    fit_pt[i,:] = bysect_line(pt_3D_data[i,:,:], pt_name[i], plot_y_n)
+    fit_pt[i,:] = bysect_line(pt_3D_data[i,:,:], pt_name[i], plot_y_n_fit_pt)
     
 # AVERAGE DISTANCE AND NUMBER OF VOXELS ABOVE AND BELOW
 # Controls
 mean_dist_ctl = np.zeros([ctl_number,14])
 above_minus_below = np.zeros([ctl_number,14])
-plot_y_n = False
 # find the mean distance for each scan
 for i in range(ctl_number):
-    mean_dist_ctl[i,:], above_minus_below[i,:] = mean_dist_b_line(ctl_3D_data[i,:,:], ctl_name[i], fit_ctl[i,:], plot_y_n)
+    mean_dist_ctl[i,:], above_minus_below[i,:] = mean_dist_b_line(ctl_3D_data[i,:,:], ctl_name[i], fit_ctl[i,:], plot_y_n_dist_each_ctl)
 # find mean and std of the results of the scans
 mean_of_mean_dist_ctl = np.mean(mean_dist_ctl, axis = 0)
 std_of_mean_dist_ctl = np.std(mean_dist_ctl, axis = 0)
 lower_bound = mean_of_mean_dist_ctl - std_of_mean_dist_ctl
 upper_bound = mean_of_mean_dist_ctl + std_of_mean_dist_ctl
-plot_y_n = True
-if plot_y_n:
+
+if plot_y_n_dist_ave_ctl:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_mean_dist_ctl,lw = 2, color = 'black', label = 'average distance')
     ax.fill_between(np.arange(14), lower_bound, upper_bound, facecolor = 'yellow', alpha = 0.5, label = 'std')
@@ -337,8 +366,8 @@ mean_of_diff_ctl = np.mean(above_minus_below, axis = 0)
 std_of_diff_ctl = np.std(above_minus_below, axis = 0)
 lower_bound = mean_of_diff_ctl - std_of_diff_ctl
 upper_bound = mean_of_diff_ctl + std_of_diff_ctl
-plot_y_n = False
-if plot_y_n:
+
+if plot_y_n_voxnum_ctl:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_diff_ctl,lw = 2, color = 'blue', label = 'average difference')
     ax.fill_between(np.arange(14), lower_bound, upper_bound, facecolor = 'green', alpha = 0.5, label = 'std')
@@ -350,17 +379,16 @@ if plot_y_n:
 # Patients
 mean_dist_pt = np.zeros([pt_number,14])
 above_minus_below = np.zeros([pt_number,14])
-plot_y_n = False
 # find the mean distance for each scan
 for i in range(pt_number):
-    mean_dist_pt[i,:], above_minus_below[i,:] = mean_dist_b_line(pt_3D_data[i,:,:], pt_name[i], fit_pt[i,:], plot_y_n)
+    mean_dist_pt[i,:], above_minus_below[i,:] = mean_dist_b_line(pt_3D_data[i,:,:], pt_name[i], fit_pt[i,:], plot_y_n_dist_each_pt)
 # find mean and std of the results of the scans
 mean_of_mean_dist_pt = np.mean(mean_dist_pt, axis = 0)
 std_of_mean_dist_pt = np.std(mean_dist_pt, axis = 0)
 lower_bound = mean_of_mean_dist_pt - std_of_mean_dist_pt
 upper_bound = mean_of_mean_dist_pt + std_of_mean_dist_pt
-plot_y_n = False
-if plot_y_n:
+
+if plot_y_n_dist_ave_pt:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_mean_dist_pt,lw = 2, color = 'black', label = 'average distance')
     ax.fill_between(np.arange(14), lower_bound, upper_bound, facecolor = 'yellow', alpha = 0.5, label = 'std')
@@ -374,7 +402,7 @@ std_of_diff_pt = np.std(above_minus_below, axis = 0)
 lower_bound = mean_of_diff_pt - std_of_diff_pt
 upper_bound = mean_of_diff_pt + std_of_diff_pt
 plot_y_n = False
-if plot_y_n:
+if plot_y_n_voxnum_pt:
     fig,ax = plt.subplots(1)
     ax.plot(np.arange(14),mean_of_diff_pt,lw = 2, color = 'blue', label = 'average difference')
     ax.fill_between(np.arange(14), lower_bound, upper_bound, facecolor = 'green', alpha = 0.5, label = 'std')
@@ -387,73 +415,81 @@ if plot_y_n:
 
 # DIVDE THREE RANGES OF FREQUENCIES AND COMPUTE NUMBER AND SIZE OF CLUSTERS
 # Controls
-plot_y_n = False
-plot_hist = False
 cluster_num_ctl = np.zeros([ctl_number,3])
 cluster_size_ctl = np.zeros([ctl_number,3])
 
+
 eps_loop = np.arange(0.5,2.5,0.5)
+eps_loop = [1,1.5]
 
 for eps in eps_loop:
     for i in range(ctl_number):
-        cluster_num_ctl[i,:], cluster_size_ctl[i,:] = three_f_ranges(ctl_3D_data[i,:,:],ctl_name[i], fit_ctl[i,:], plot_y_n, eps = eps, min_samples = 3)
-    if plot_hist:
+        cluster_num_ctl[i,:], cluster_size_ctl[i,:] = three_f_ranges(ctl_3D_data[i,:,:],ctl_name[i], fit_ctl[i,:], plot_y_n_cluster_map_ctl, eps = eps, min_samples = 3)
+    
+    if plot_y_n_cluster_hist_ctl:
         fig, (ax1, ax2) = plt.subplots(1, 2)
         ax1.set_title('CONTROLS Number of clusters')
         ax1.set_xlabel('Number of clusters')
         ax1.set_ylabel('Occurrency')
-        ax1.hist(cluster_num_ctl[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-        ax1.hist(cluster_num_ctl[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-        ax1.hist(cluster_num_ctl[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax1.hist(cluster_num_ctl, bins = 30, alpha = 0.4, label = ['Low frequency','Medium frequency','High frequency'], density = True, stacked = True)
         ax1.legend()
         
         ax2.set_title('Size of clusters - Epsilon = {}'.format(eps))
         ax2.set_xlabel('Size of clusters')
         ax2.set_ylabel('Occurrency')
-        ax2.hist(cluster_size_ctl[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-        ax2.hist(cluster_size_ctl[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-        ax2.hist(cluster_size_ctl[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax2.hist(cluster_size_ctl, bins = 30, alpha = 0.4, label = ['Low frequency','Medium frequency','High frequency'],density = True, stacked = True)
         ax2.legend()
         
     # Patients
-    plot_y_n = False
     cluster_num_pt = np.zeros([pt_number,3])
     cluster_size_pt = np.zeros([pt_number,3])
     for i in range(pt_number):
-        cluster_num_pt[i,:], cluster_size_pt[i,:] = three_f_ranges(pt_3D_data[i,:,:],pt_name[i], fit_pt[i,:], plot_y_n, eps = eps, min_samples = 3)
-    if plot_hist:
+        cluster_num_pt[i,:], cluster_size_pt[i,:] = three_f_ranges(pt_3D_data[i,:,:],pt_name[i], fit_pt[i,:], plot_y_n_cluster_map_pt, eps = eps, min_samples = 3)
+
+    if plot_y_n_cluster_hist_pt:
         fig, (ax1, ax2) = plt.subplots(1, 2)
         ax1.set_title('PATIENTS Number of clusters')
         ax1.set_xlabel('Number of clusters')
         ax1.set_ylabel('Occurrency')
-        ax1.hist(cluster_num_pt[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-        ax1.hist(cluster_num_pt[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-        ax1.hist(cluster_num_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax1.hist(cluster_num_pt, bins = 30, alpha = 0.4, label = ['Low frequency','Medium frequency','High frequency'], density = True, stacked = True)
         ax1.legend()
         
         ax2.set_title('Size of clusters - Epsilon = {}'.format(eps))
         ax2.set_xlabel('Size of clusters')
         ax2.set_ylabel('Occurrency')
-        ax2.hist(cluster_size_pt[:,0], bins = 30, alpha = 0.4, label = 'Low frequency')
-        ax2.hist(cluster_size_pt[:,1], bins = 30, alpha = 0.4, label = 'Medium frequency')
-        ax2.hist(cluster_size_pt[:,2], bins = 30, alpha = 0.4, label = 'High frequency')
+        ax2.hist(cluster_size_pt, bins = 30, alpha = 0.4, label = ['Low frequency','Medium frequency','High frequency'],density = True, stacked = True)
         ax2.legend()
         
 # MATRIXING
 # Work with Controls
-plot_y_n = True
 if use_norm_data:
-    pixels = 35
+    pixels = 40
 else:
-    pixels = 24
+    pixels = 42
 for i in range(ctl_number):
-    ctl_mat = matrixing(ctl_3D_data[i,:,:], ctl_name[i], pixels, plot_y_n)
+    ctl_mat = matrixing(ctl_3D_data[i,:,:], ctl_name[i], pixels, plot_y_n_matrizing_ctl)
 
 for i in range(pt_number):
-    pt_mat = matrixing(pt_3D_data[i,:,:], pt_name[i], pixels, plot_y_n)
+    pt_mat = matrixing(pt_3D_data[i,:,:], pt_name[i], pixels, plot_y_n_matrizing_pt)
 
-    
-
+ 
+# ANATOMY
+if plot_y_n_anat_ctl:
+    for i in range(ctl_number):
+        data = ctl_3D_data[i,:,:]
+        title = ctl_name[i]
+        xs,ys,zs,fs,an = organize_data(data)
+        an_sign = np.sign(an)
+        get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
+        idx_pos = get_indexes(1,an_sign)
+        idx_neg = get_indexes(-1,an_sign)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(xs[idx_pos],ys[idx_pos], c = 'k',label = 'concave')
+        ax.scatter(xs[idx_neg],ys[idx_neg], c = 'g',label = 'convex')    
+        plt.title(title)
+        plt.legend()
+        plt.show()
 
 
 
