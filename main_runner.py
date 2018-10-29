@@ -7,6 +7,7 @@ Created on Tue Sep 25 15:36:12 2018
 
 from import_function import *
 import scipy.io
+import matplotlib
 
 plt.close('all')
 
@@ -162,8 +163,196 @@ pt_name = ['Patient 1 - RH', 'Patient 1 - LH',
            'Patient 23 - RH', 'Patient 23 - LH',
            'Patient 24 - RH', 'Patient 24 - LH']
 
+ctl_list_relabelled = ['CTL1_tono_poi_PAC_RH',
+                       'CTL2_tono_poi_PAC_LH',
+                       'CTL2_tono_poi_PAC_RH',
+                       'CTL3_tono_poi_PAC_LH',
+                       'CTL3_tono_poi_PAC_RH',
+                       'CTL4_tono_poi_PAC_RH',
+                       'CTL5_tono_poi_PAC_RH',
+                       'CTL6_tono_poi_PAC_LH',
+                       'CTL6_tono_poi_PAC_RH',
+                       'CTL8_tono_poi_PAC_LH',
+                       'CTL8_tono_poi_PAC_RH',
+                       'CTL9_tono_poi_PAC_LH',
+                       'CTL9_tono_poi_PAC_RH',
+                       'CTL10_tono_poi_PAC_RH',
+                       'CTL12_tono_poi_PAC_LH',
+                       'CTL12_tono_poi_PAC_RH',
+                       'PT1_tono_poi_PAC_LH',
+                       'PT1_tono_poi_PAC_RH',
+                       'PT2_tono_poi_PAC_RH',
+                       'PT3_tono_poi_PAC_RH',
+                       'PT4_tono_poi_PAC_LH',
+                       'PT4_tono_poi_PAC_RH',
+                       'PT8_tono_poi_PAC_LH',
+                       'PT8_tono_poi_PAC_RH',
+                       'PT9_tono_poi_PAC_LH',
+                       'PT9_tono_poi_PAC_RH',
+                       'PT11_tono_poi_PAC_LH',
+                       'PT13_tono_poi_PAC_RH',
+                       'PT15_tono_poi_PAC_RH',
+                       'PT20_tono_poi_PAC_RH',
+                       'PT23_tono_poi_PAC_LH']
+
+ctl_anat_relabelled = ['CTL1_anat_poi_PAC_RH',
+                       'CTL2_anat_poi_PAC_LH',
+                       'CTL2_anat_poi_PAC_RH',
+                       'CTL3_anat_poi_PAC_LH',
+                       'CTL3_anat_poi_PAC_RH',
+                       'CTL4_anat_poi_PAC_RH',
+                       'CTL5_anat_poi_PAC_RH',
+                       'CTL6_anat_poi_PAC_LH',
+                       'CTL6_anat_poi_PAC_RH',
+                       'CTL8_anat_poi_PAC_LH',
+                       'CTL8_anat_poi_PAC_RH',
+                       'CTL9_anat_poi_PAC_LH',
+                       'CTL9_anat_poi_PAC_RH',
+                       'CTL10_anat_poi_PAC_RH',
+                       'CTL12_anat_poi_PAC_LH',
+                       'CTL12_anat_poi_PAC_RH',
+                       'PT1_anat_poi_PAC_LH',
+                       'PT1_anat_poi_PAC_RH',
+                       'PT2_anat_poi_PAC_RH',
+                       'PT3_anat_poi_PAC_RH',
+                       'PT4_anat_poi_PAC_LH',
+                       'PT4_anat_poi_PAC_RH',
+                       'PT8_anat_poi_PAC_LH',
+                       'PT8_anat_poi_PAC_RH',
+                       'PT9_anat_poi_PAC_LH',
+                       'PT9_anat_poi_PAC_RH',
+                       'PT11_anat_poi_PAC_LH',
+                       'PT13_anat_poi_PAC_RH',
+                       'PT15_anat_poi_PAC_RH',
+                       'PT20_anat_poi_PAC_RH',
+                       'PT23_anat_poi_PAC_LH']
+
+ctl_name_relabelled = ['Control re-1 (CTL1RH)',
+                       'Control re-2 (CTL2LH)',
+                       'Control re-3 (CTL2RH)',
+                       'Control re-4 (CTL3LH)',
+                       'Control re-5 (CTL3RH)',
+                       'Control re-6 (CTL4RH)',
+                       'Control re-7 (CTL5RH)',
+                       'Control re-8 (CTL6LH)',
+                       'Control re-9 (CTL6RH)',
+                       'Control re-10 (CTL8LH)',
+                       'Control re-11 (CTL8RH)',
+                       'Control re-12 (CTL9LH)',
+                       'Control re-13 (CTL9RH)',
+                       'Control re-14 (CTL10RH)',
+                       'Control re-15 (CTL12LH)',
+                       'Control re-16 (CTL12RH)',
+                       'Control re-17 (PT1LH)',
+                       'Control re-18 (PT1RH)',
+                       'Control re-19 (PT2RH)',
+                       'Control re-20 (PT3RH)',
+                       'Control re-21 (PT4LH)',
+                       'Control re-22 (PT4RH)',
+                       'Control re-23 (PT8LH)',
+                       'Control re-24 (PT8RH)',
+                       'Control re-25 (PT9LH)',
+                       'Control re-26 (PT9RH)',
+                       'Control re-27 (PT11LH)',
+                       'Control re-28 (PT13RH)',
+                       'Control re-29 (PT15RH)',
+                       'Control re-30 (PT20RH)',
+                       'Control re-31 (PT23LH)'
+                        ]
+
+pt_list_relabelled = ['CTL1_tono_poi_PAC_LH',
+                      'CTL4_tono_poi_PAC_LH',
+                      'CTL5_tono_poi_PAC_LH',
+                      'CTL7_tono_poi_PAC_LH',
+                      'CTL7_tono_poi_PAC_RH',
+                      'CTL10_tono_poi_PAC_LH',
+                      'PT5_tono_poi_PAC_LH',
+                      'PT5_tono_poi_PAC_RH',
+                      'PT6_tono_poi_PAC_LH',
+                      'PT7_tono_poi_PAC_LH',
+                      'PT10_tono_poi_PAC_LH',
+                      'PT11_tono_poi_PAC_RH',
+                      'PT12_tono_poi_PAC_LH',
+                      'PT12_tono_poi_PAC_RH',
+                      'PT13_tono_poi_PAC_LH',
+                      'PT14_tono_poi_PAC_LH',
+                      'PT15_tono_poi_PAC_LH',
+                      'PT16_tono_poi_PAC_LH',
+                      'PT16_tono_poi_PAC_RH',
+                      'PT17_tono_poi_PAC_LH',
+                      'PT17_tono_poi_PAC_RH',
+                      'PT18_tono_poi_PAC_RH',
+                      'PT19_tono_poi_PAC_LH',
+                      'PT20_tono_poi_PAC_LH',
+                      'PT21_tono_poi_PAC_RH',
+                      'PT22_tono_poi_PAC_RH',
+                      'PT24_tono_poi_PAC_RH'
+                      ]
+
+pt_anat_relabelled = ['CTL1_anat_poi_PAC_LH',
+                      'CTL4_anat_poi_PAC_LH',
+                      'CTL5_anat_poi_PAC_LH',
+                      'CTL7_anat_poi_PAC_LH',
+                      'CTL7_anat_poi_PAC_RH',
+                      'CTL10_anat_poi_PAC_LH',
+                      'PT5_anat_poi_PAC_LH',
+                      'PT5_anat_poi_PAC_RH',
+                      'PT6_anat_poi_PAC_LH',
+                      'PT7_anat_poi_PAC_LH',
+                      'PT10_anat_poi_PAC_LH',
+                      'PT11_anat_poi_PAC_RH',
+                      'PT12_anat_poi_PAC_LH',
+                      'PT12_anat_poi_PAC_RH',
+                      'PT13_anat_poi_PAC_LH',
+                      'PT14_anat_poi_PAC_LH',
+                      'PT15_anat_poi_PAC_LH',
+                      'PT16_anat_poi_PAC_LH',
+                      'PT16_anat_poi_PAC_RH',
+                      'PT17_anat_poi_PAC_LH',
+                      'PT17_anat_poi_PAC_RH',
+                      'PT18_anat_poi_PAC_RH',
+                      'PT19_anat_poi_PAC_LH',
+                      'PT20_anat_poi_PAC_LH',
+                      'PT21_anat_poi_PAC_RH',
+                      'PT22_anat_poi_PAC_RH',
+                      'PT24_anat_poi_PAC_RH'
+                      ]
+
+
+pt_name_relabelled = ['Patient re-1 (CTL1LH)',
+                      'Patient re-2 (CTL4LH)',
+                      'Patient re-3 (CTL5LH)',
+                      'Patient re-4 (CTL7LH)',
+                      'Patient re-5 (CTL7RH)',
+                      'Patient re-6 (CTL10LH)',
+                      'Patient re-7 (PT5LH)',
+                      'Patient re-8 (PT5RH)',
+                      'Patient re-9 (PT6LH)',
+                      'Patient re-10 (PT7LH)',
+                      'Patient re-11 (PT10RH)',
+                      'Patient re-12 (PT11RH)',
+                      'Patient re-13 (PT12LH)',
+                      'Patient re-14 (PT12RH)',
+                      'Patient re-15 (PT13LH)',
+                      'Patient re-16 (PT14LH)',
+                      'Patient re-17 (PT15LH)',
+                      'Patient re-18 (PT16LH)',
+                      'Patient re-19 (PT16RH)',
+                      'Patient re-20 (PT17LH)',
+                      'Patient re-21 (PT17RH)',
+                      'Patient re-22 (PT18RH)',
+                      'Patient re-23 (PT19LH)',
+                      'Patient re-24 (PT20LH)',
+                      'Patient re-25 (PT21RH)',
+                      'Patient re-26 (PT22RH)',
+                      'Patient re-27 (PT24RH)'
+                      ]
+
 # make your choice!
+# 1) which data
 use_norm_data = False
+use_relabelled_data = True
+# 2) which plots
 threeD_plot_ctl = False
 twoD_plot_ctl = False
 threeD_plot_pt = False
@@ -182,8 +371,20 @@ plot_y_n_cluster_hist_ctl = False
 plot_y_n_cluster_hist_pt = False
 plot_y_n_matrizing_ctl = False
 plot_y_n_matrizing_pt = False
-plot_y_n_anat_ctl = True
+plot_y_n_anat_ctl = False
 plot_y_n_anat_pt = False
+plot_y_n_anat_ctl_sign = False
+plot_y_n_anat_pt_sign = False
+plot_y_n_angles_ctl = False
+plot_y_n_min_and_max_ctl = False
+plot_y_n_angles_pt = False
+plot_y_n_min_and_max_pt = False
+plot_y_n_angles_anat_ctl = False
+plot_y_n_angles_anat_pt = False
+plot_y_n_hist_angles_anat_ctl = True
+plot_y_n_hist_angles_anat_pt = False
+plot_y_n_fit_anat_ctl = False
+plot_y_n_fit_anat_pt = False
 save_figures = True
 output_dir = "../figures/all_maps"
 
@@ -191,6 +392,13 @@ output_dir = "../figures/all_maps"
 if use_norm_data:  
     ctl_list = ctl_list_norm
     pt_list = pt_list_norm
+elif use_relabelled_data:
+    ctl_list = ctl_list_relabelled
+    pt_list = pt_list_relabelled
+    ctl_anat = ctl_anat_relabelled
+    pt_anat = pt_anat_relabelled
+    ctl_name = ctl_name_relabelled
+    pt_name = pt_name_relabelled
 else: 
     ctl_list = ctl_list_full
     pt_list = pt_list_full
@@ -210,7 +418,8 @@ for i in range(ctl_number):
     else:
         mydata = scipy.io.loadmat(ctl_list[i])['data']
     # anatomy
-    mydata_anat = scipy.io.loadmat(ctl_anat[i])['data']
+    if use_norm_data == False:
+        mydata_anat = scipy.io.loadmat(ctl_anat[i])['data']
     
     max_len = np.shape(mydata)[0]
     # import x
@@ -222,7 +431,8 @@ for i in range(ctl_number):
     # import f
     ctl_3D_data[i,3,0:max_len] = 14-mydata[:,7]
     # import anatomy
-    ctl_3D_data[i,4,0:max_len] = mydata_anat[:,7]
+    if use_norm_data == False:
+        ctl_3D_data[i,4,0:max_len] = mydata_anat[:,7]
     
 # work with Patients
 pt_number = np.shape(pt_list)[0]
@@ -251,7 +461,8 @@ for i in range(pt_number):
     # import f
     pt_3D_data[i,3,0:max_len] = 14-mydata[:,7]
     # import anatomy
-    pt_3D_data[i,4,0:max_len] = mydata_anat[:,7]
+    if use_norm_data == False:
+        pt_3D_data[i,4,0:max_len] = mydata_anat[:,7]
 
 # PLOTS
 # work with Controls
@@ -419,8 +630,7 @@ cluster_num_ctl = np.zeros([ctl_number,3])
 cluster_size_ctl = np.zeros([ctl_number,3])
 
 
-eps_loop = np.arange(0.5,2.5,0.5)
-eps_loop = [1,1.5]
+eps_loop = np.arange(1.,2.5,0.5)
 
 for eps in eps_loop:
     for i in range(ctl_number):
@@ -465,7 +675,7 @@ for eps in eps_loop:
 if use_norm_data:
     pixels = 40
 else:
-    pixels = 42
+    pixels = 30
 for i in range(ctl_number):
     ctl_mat = matrixing(ctl_3D_data[i,:,:], ctl_name[i], pixels, plot_y_n_matrizing_ctl)
 
@@ -474,7 +684,8 @@ for i in range(pt_number):
 
  
 # ANATOMY
-if plot_y_n_anat_ctl:
+# work with Controls
+if plot_y_n_anat_ctl_sign:
     for i in range(ctl_number):
         data = ctl_3D_data[i,:,:]
         title = ctl_name[i]
@@ -490,7 +701,365 @@ if plot_y_n_anat_ctl:
         plt.title(title)
         plt.legend()
         plt.show()
+# work with Patients 
+if plot_y_n_anat_pt_sign:
+    for i in range(pt_number):
+        data = pt_3D_data[i,:,:]
+        title = pt_name[i]
+        xs,ys,zs,fs,an = organize_data(data)
+        an_sign = np.sign(an)
+        get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
+        idx_pos = get_indexes(1,an_sign)
+        idx_neg = get_indexes(-1,an_sign)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(xs[idx_pos],ys[idx_pos], c = 'k',label = 'concave')
+        ax.scatter(xs[idx_neg],ys[idx_neg], c = 'g',label = 'convex')    
+        plt.title(title)
+        plt.legend()
+        plt.show()
+# work with Controls        
+if plot_y_n_anat_ctl:
+    for i in range(ctl_number):
+        data = ctl_3D_data[i,:,:]
+        title = ctl_name[i]
+        xs,ys,zs,fs,an = organize_data(data)
+        idx_zeros = np.where(np.logical_and(an>=-0.02, an<=0.02))
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(xs,ys,c = an, cmap = 'gray')
+        ax.scatter(xs[idx_zeros],ys[idx_zeros], c = 'r',label = '0-level contour',s = 5)
+        plt.title(title)
+        plt.legend()
+        plt.show()
+        cax, _ = matplotlib.colorbar.make_axes(ax)
+        cbar = matplotlib.colorbar.ColorbarBase(cax, cmap='gray')
+        cbar.ax.set_yticklabels(['< 0 convex', '','','','', '> 0 concave'])  # vertically oriented colorbar
+# work with Patients 
+if plot_y_n_anat_pt:
+    for i in range(pt_number):
+        data = pt_3D_data[i,:,:]
+        title = pt_name[i]
+        xs,ys,zs,fs,an = organize_data(data)
+        idx_zeros = np.where(np.logical_and(an>=-0.02, an<=0.02))
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(xs,ys,c = an, cmap = 'gray')
+        ax.scatter(xs[idx_zeros],ys[idx_zeros], c = 'r',label = '0-level contour',s = 5)
+        plt.title(title)
+        plt.legend()
+        plt.show()
+        cax, _ = matplotlib.colorbar.make_axes(ax)
+        cbar = matplotlib.colorbar.ColorbarBase(cax, cmap='gray')
+        cbar.ax.set_yticklabels(['< 0 convex', '','','','', '> 0 concave'])  # vertically oriented colorbar
+        
+# CLASSIFY ANATOMY AND DRAW THE ANATOMIC BYSECTING LINE
+# work with Controls
+# 1) divide three levels range: very negative, close to zero, very positive
 
+ctl_number_all = np.zeros([ctl_number,3])
+
+ctl_anat_classify = np.zeros(ctl_number)
+fit_ctl_anat = np.zeros([ctl_number,2])
+
+for i in range(ctl_number):
+    #print('CONTROL {}'.format(i))
+    data = ctl_3D_data[i,:,:]
+    title = ctl_name[i]
+    xs,ys,zs,fs,an = organize_data(data)
+    idx_zeros = np.where(np.logical_and(an>=-0.085, an<=0.085))
+    idx_neg = np.where(an<-0.085)
+    idx_pos = np.where(an>0.085)
+
+    xs_zeros = [xs[i] for i in idx_zeros]
+    ys_zeros = [ys[i] for i in idx_zeros]
+    xs_pos = [xs[i] for i in idx_pos]
+    ys_pos = [ys[i] for i in idx_pos]
+    an_pos = [an[i] for i in idx_pos]
+    xs_neg = [xs[i] for i in idx_neg]
+    ys_neg = [ys[i] for i in idx_neg]
+    an_neg = [an[i] for i in idx_neg]
+
+    plot_y_n = False
+
+    if plot_y_n:
+        plt.figure()
+        plt.plot(xs_zeros,ys_zeros,'o',color = 'gray',label = 'zeros')
+        plt.plot(xs_neg,ys_neg,'o',color = 'black', label = 'concave')
+        plt.plot(xs_pos,ys_pos,'o', color = 'lightgray', label = 'convex')
+        plt.xlabel('x coordinate')
+        plt.ylabel('y coordinate')
+        #plt.legend()
+        plt.title(title)
+        plt.show()
+
+    # find number of cluster and respective size
+    get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
+    
+    coord_zeros = np.zeros([len(xs_zeros[0]),2])
+    coord_zeros[:,0] = xs_zeros[0]
+    coord_zeros[:,1] = ys_zeros[0]
+    
+    coord_pos = np.zeros([len(xs_pos[0]),2])
+    coord_pos[:,0] = xs_pos[0]
+    coord_pos[:,1] = ys_pos[0]
+    
+    coord_neg = np.zeros([len(xs_neg[0]),2])
+    coord_neg[:,0] = xs_neg[0]
+    coord_neg[:,1] = ys_neg[0]
+
+    coord_all = [coord_zeros, coord_pos, coord_neg]
+    
+    cluster_number = np.zeros(len(coord_all))
+    cluster_size_mean = np.zeros(len(coord_all))
+    cluster_nb_zeros = 0
+    cluster_nb_zeros_big = 0
+    cluster_nb_zeros_small = 0
+    cluster_nb_pos = 0
+    cluster_nb_pos_big = 0
+    cluster_nb_pos_small = 0
+    cluster_nb_neg = 0
+    cluster_nb_neg_big = 0
+    cluster_nb_neg_small = 0
+    
+    fraction_big_small = 0.09
+    eps = 1.5
+    
+    for j,X in enumerate(coord_all):
+        if np.shape(X)[0]==0:
+            cluster_size_mean[j] = 0
+            cluster_number[j] = 0
+        else:
+            clustering = DBSCAN(eps=eps, min_samples=3).fit(X)
+            labels = clustering.labels_ 
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            unique_labels = set(labels)
+            cluster_size = 0
+            for lab in unique_labels:
+                if lab != -1:
+                    idx_lab = get_indexes(lab,labels)
+                    #print('size of cluster level {} is {}'.format(j,len(idx_lab)))
+                    #print('its ratio to total number {} is {}'.format(len(xs),len(idx_lab)/len(xs)))
+                    cluster_size += len(idx_lab)
+                    fraction = len(idx_lab)/len(xs)  # classify the clusters according to their height and their size
+                    if j == 0 and fraction >= fraction_big_small:
+                        cluster_nb_zeros_big += 1
+                    elif j == 0 and fraction < fraction_big_small:
+                        cluster_nb_zeros_small += 1
+                    elif j == 1 and fraction >= fraction_big_small:
+                        cluster_nb_pos_big += 1
+                    elif j == 1 and fraction < fraction_big_small:
+                        cluster_nb_pos_small += 1
+                    elif j == 2 and fraction >= fraction_big_small:
+                        cluster_nb_neg_big += 1
+                    elif j == 2 and fraction < fraction_big_small:
+                        cluster_nb_neg_small += 1
+                    
+                    
+            if n_clusters_ != 0:
+                cluster_size_mean[j] = cluster_size/n_clusters_
+            cluster_number[j] = n_clusters_
+            # count total number of clusters per height level
+            if j == 0:
+                cluster_nb_zeros = n_clusters_
+            elif j == 1:
+                cluster_nb_pos = n_clusters_
+            elif j == 2:
+                cluster_nb_neg = n_clusters_
+            
+            # Plot results (Black removed and is used for noise instead)
+            core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
+            core_samples_mask[clustering.core_sample_indices_] = True
+            
+            colors = [plt.cm.Spectral(each)
+                      for each in np.linspace(0, 1, len(unique_labels))]
+                
+            if plot_y_n:
+                plt.figure()
+                for k, col in zip(unique_labels, colors):
+                    if k == -1:
+                        # Black used for noise.
+                        col = [0, 0, 0, 1]
+                
+                    class_member_mask = (labels == k)
+                
+                    xy = X[class_member_mask & core_samples_mask]
+                    
+                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                             markeredgecolor='k', markersize=14)
+                
+                    xy = X[class_member_mask & ~core_samples_mask]
+                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                             markeredgecolor='k', markersize=6)
+            
+            #plt.title('Estimated number of clusters: %d' % n_clusters_)
+            plt.show()
+            
+    #print('For control {} there are {} pos, {} neg, {} zeros'.format(i,cluster_number[0],cluster_number[1],cluster_number[2]))
+
+    # here classify the anatomy of the scan into 1. single gyrus   2. partial duplication   3.full duplication
+    # check single gyrus
+    if cluster_nb_neg_big == 1 and cluster_nb_neg<=2:
+        if cluster_nb_pos == 2:
+            if cluster_nb_pos_big >= 1:
+                if cluster_nb_zeros >= 2:
+                    if cluster_nb_zeros > 2 or cluster_nb_zeros_big == 2:
+                        ctl_anat_classify[i] = 1
+    # check partial duplication                    
+    if ctl_anat_classify[i] == 0:    
+        if cluster_nb_zeros_big <= 2:
+            if cluster_nb_pos >= 2:
+                ctl_anat_classify[i] = 2
+    # check full duplication
+    if ctl_anat_classify[i] != 1:     
+        if cluster_nb_pos_big >= 1:
+            if cluster_nb_zeros_big >= 2 or cluster_nb_zeros >= 3:
+                if cluster_nb_neg >= 2:
+                    ctl_anat_classify[i] = 3
+    #print(cluster_nb_zeros_big,cluster_nb_zeros_small,cluster_nb_pos_big,cluster_nb_pos_small,cluster_nb_neg_big,cluster_nb_neg_small)
+    #print(cluster_nb_zeros,cluster_nb_pos,cluster_nb_neg)
+    #print('classified {}'.format(ctl_anat_classify[i]))
+    
+    # BYSECTING LINE THROUGH ANATOMY
+    # divide two cases 
+    # case A) syngle gyrus --> consider only the negative values for the fit
+    if ctl_anat_classify[i] == 1:
+        
+        an_neg_rev = [-x for x in an_neg]
+        coeff_w = np.polyfit(xs_neg[0],ys_neg[0],deg = 1, w = an_neg_rev[0])
+    
+        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
+        y_fit = x_fit*coeff_w[0]+coeff_w[1]
+        
+        if plot_y_n_fit_anat_ctl:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(xs_neg[0],ys_neg[0], c = an_neg[0], cmap = 'gray')    
+            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
+            plt.title(title)
+            plt.legend()
+            plt.show()
+    
+        fit_ctl_anat[i,:] = coeff_w
+    # case B) partial or full duplication
+    if ctl_anat_classify[i] == 2 or ctl_anat_classify[i] == 3:
+        
+        weights = np.concatenate((an_pos[0],an_neg[0]))
+        xs_conc = np.concatenate((xs_pos[0],xs_neg[0]))
+        ys_conc = np.concatenate((ys_pos[0],ys_neg[0]))
+        #coeff_w = np.polyfit(xs_conc,ys_conc,deg = 1, w = weights)
+        
+        coeff_w = np.polyfit(xs_pos[0],ys_pos[0],deg = 1, w = an_pos[0])
+    
+        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
+        y_fit = x_fit*coeff_w[0]+coeff_w[1]
+        
+        if plot_y_n_fit_anat_ctl:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(xs,ys, c = an, cmap = 'gray')    
+            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
+            plt.title(title)
+            plt.legend()
+            plt.show()
+    
+        fit_ctl_anat[i,:] = coeff_w
+    
+    
+    
+# ANGLES
+# angles    
+# work with Controls
+angle_ctl = np.zeros(ctl_number)
+angle_single_ctl = []
+angle_partial_ctl = []
+angle_complete_ctl = []
+
+for i in range(ctl_number):
+    angle_ctl[i],_,_,_,_,_,_ = find_angles(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl[i,:],plot_y_n_angles_ctl,plot_y_n_min_and_max_ctl)
+
+    if ctl_anat_classify[i] == 1:
+        angle_single_ctl += [angle_ctl[i]]
+    elif ctl_anat_classify[i] == 2:
+        angle_partial_ctl += [angle_ctl[i]]
+    elif ctl_anat_classify[i] == 3:
+        angle_complete_ctl += [angle_ctl[i]]
+        
+    
+if plot_y_n_angles_ctl:
+    plt.figure()
+    plt.hist(angle_ctl, bins = 16, alpha = 0.7, density = False, stacked = False)
+    plt.title('CONTROLS')
+    plt.xlabel('Angle')
+    plt.ylabel('Occurrency')
+    
+if plot_y_n_hist_angles_anat_ctl:
+    plt.figure()
+    plt.hist(angle_single_ctl, alpha = 0.4, label = 'Single gyrus', density = False, stacked = False)
+    plt.hist(angle_partial_ctl, alpha = 0.4, label = 'Partial duplication', density = False, stacked = False)
+    plt.hist(angle_complete_ctl, alpha = 0.4, label = 'Complete duplication', density = False, stacked = False)
+    plt.title('CONTROLS')
+    plt.xlabel('Angle')
+    plt.ylabel('Occurrency')
+    plt.legend()
+    plt.show()
+
+# work with Patients
+angle_pt = np.zeros(pt_number)
+
+for i in range(pt_number):
+    angle_pt[i],_,_,_,_,_,_ = find_angles(pt_3D_data[i,:,:],pt_name[i],fit_pt[i,:],plot_y_n_angles_pt,plot_y_n_min_and_max_pt)
+    
+if plot_y_n_angles_pt:
+    plt.figure()
+    plt.hist(angle_pt, bins = 16, alpha = 0.7, density = False, stacked = False)
+    plt.title('PATIENTS')
+    plt.xlabel('Angle')
+    plt.ylabel('Occurrency')
+
+# RELATE ANGLES AND HESCHL GYRUS DUPLICATION
+# work with Controls
+#angle_single_ctl = np.zeros(ctl_number)
+#angle_partial_ctl = np.zeros(ctl_number)
+#angle_complete_ctl = np.zeros(ctl_number)
+    
+
+for i in range(ctl_number):
+    # find the points
+    angle_ctl[i], xs_min, ys_min, xs_max_above, ys_max_above, xs_max_below, ys_max_below= find_angles(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl[i,:],plot_y_n_angles_ctl,plot_y_n_min_and_max_ctl)
+    # plot the points on the anatomy map
+    data = ctl_3D_data[i,:,:]
+    title = ctl_name[i]
+    xs,ys,zs,fs,an = organize_data(data)
+    #an_sign = np.sign(an) to be put back  
+    an_sign = np.zeros(len(an)-1)  # different way to take the sign so that the last value which gives a problem for the control re-30 is not taken into account. CAREFUL we are not considering the last element
+    for k in range(len(an)-1):
+        an_sign[k] = np.sign(an[k])
+    
+    
+    get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
+    idx_pos = get_indexes(1,an_sign)
+    idx_neg = get_indexes(-1,an_sign)
+    if plot_y_n_angles_anat_ctl:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(xs[idx_pos],ys[idx_pos], c = 'k',label = 'concave')
+        ax.scatter(xs[idx_neg],ys[idx_neg], c = 'g',label = 'convex') 
+        plt.plot(xs_min,ys_min,'r*',markersize = 20, label = 'closest low')
+        plt.plot(xs_max_above,ys_max_above,'ro',markersize = 18,label = 'highest high above')
+        plt.plot(xs_max_below,ys_max_below,'ro',markersize = 18,label = 'highest high below')
+        plt.title(ctl_name[i])
+        plt.legend(loc = 'upper right')
+        plt.show()
+    
+    # here veryfy conditions for single gyrus, partial duplication, complete duplication and  fill the array
+    # to be done
+    
+    
+    
+
+
+        
 
 
 #sk learn rich regression
