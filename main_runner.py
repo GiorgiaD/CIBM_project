@@ -352,13 +352,19 @@ pt_name_relabelled = ['Patient re-1 (CTL1LH)',
 # 1) which data
 use_norm_data = False
 use_relabelled_data = True
-# 2) which plots
+# 2) which fit   <------- choose one among the three options
+which_fit = 'tono_only'
+which_fit = 'anat_only'
+which_fit = 'comb_tono_anat'
+# 3) which plots
 threeD_plot_ctl = False
 twoD_plot_ctl = False
 threeD_plot_pt = False
 twoD_plot_pt = False
 plot_y_n_fit_ctl = False
 plot_y_n_fit_pt = False
+plot_y_n_cfr_bysect_ctl = False
+plot_y_n_cfr_bysect_pt = False
 plot_y_n_dist_each_ctl = False
 plot_y_n_dist_ave_ctl = False
 plot_y_n_dist_each_pt = False
@@ -381,11 +387,15 @@ plot_y_n_angles_pt = False
 plot_y_n_min_and_max_pt = False
 plot_y_n_angles_anat_ctl = False
 plot_y_n_angles_anat_pt = False
-plot_y_n_hist_angles_anat_ctl = True
+plot_y_n_hist_angles_anat_ctl = False
 plot_y_n_hist_angles_anat_pt = False
 plot_y_n_fit_anat_ctl = False
 plot_y_n_fit_anat_pt = False
-save_figures = True
+plot_y_n_three_anat_regions_ctl = False
+plot_y_n_three_anat_regions_pt = False
+plot_y_n_anat_clusters_ctl = False
+plot_y_n_anat_clusters_pt = False
+save_figures = False
 output_dir = "../figures/all_maps"
 
 
@@ -463,6 +473,8 @@ for i in range(pt_number):
     # import anatomy
     if use_norm_data == False:
         pt_3D_data[i,4,0:max_len] = mydata_anat[:,7]
+        
+
 
 # PLOTS
 # work with Controls
@@ -541,16 +553,60 @@ if twoD_plot_pt:
 
 
 # BYSECTING LINE - FIND AND PLOT
+# A) Only tono
 # Controls
-fit_ctl = np.zeros([ctl_number,2])
+fit_ctl_tono = np.zeros([ctl_number,2])
 for i in range(ctl_number):
-    fit_ctl[i,:] = bysect_line(ctl_3D_data[i,:,:], ctl_name[i], plot_y_n_fit_ctl) # NB here fs is already 14-fs
+    fit_ctl_tono[i,:] = bysect_line(ctl_3D_data[i,:,:], ctl_name[i], plot_y_n_fit_ctl) # NB here fs is already 14-fs
 
 # Patients
-fit_pt = np.zeros([pt_number,2])
+fit_pt_tono = np.zeros([pt_number,2])
 for i in range(pt_number):
-    fit_pt[i,:] = bysect_line(pt_3D_data[i,:,:], pt_name[i], plot_y_n_fit_pt)
+    fit_pt_tono[i,:] = bysect_line(pt_3D_data[i,:,:], pt_name[i], plot_y_n_fit_pt)
     
+# B) Only anat
+# Controls
+ctl_anat_classify = np.zeros(ctl_number)  # which gyrus shape does the person have?
+fit_ctl_anat = np.zeros([ctl_number,2])   # fit of parameters on the basis of anatomy
+for i in range(ctl_number):
+    ctl_anat_classify[i], fit_ctl_anat[i,:] = anatomy(ctl_3D_data[i,:,:],ctl_name[i],plot_y_n_three_anat_regions_ctl,plot_y_n_anat_clusters_ctl,plot_y_n_fit_anat_ctl)
+
+# Patients
+pt_anat_classify = np.zeros(pt_number)  # which gyrus shape does the person have?
+fit_pt_anat = np.zeros([pt_number,2])   # fit of parameters on the basis of anatomy
+for i in range(pt_number):
+    pt_anat_classify[i], fit_pt_anat[i,:] = anatomy(pt_3D_data[i,:,:],pt_name[i],plot_y_n_three_anat_regions_pt,plot_y_n_anat_clusters_pt,plot_y_n_fit_anat_pt)
+       
+# C) Combined tono and anat  ---> tono weights 20%, anat weights 80%
+# Controls
+fit_ctl_comb_tono_anat = 0.2*fit_ctl_tono+0.8*fit_ctl_anat
+# Patients
+fit_pt_comb_tono_anat = 0.2*fit_pt_tono+0.8*fit_pt_anat
+
+# Plot the comparison
+# Controls
+if plot_y_n_cfr_bysect_ctl:
+    for i in range(ctl_number):
+        cfr_bysecting_lines(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl_tono[i,:],fit_ctl_anat[i,:],fit_ctl_comb_tono_anat[i,:])
+ 
+# Patients
+if plot_y_n_cfr_bysect_pt:
+    for i in range(pt_number):
+        cfr_bysecting_lines(pt_3D_data[i,:,:],pt_name[i],fit_pt_tono[i,:],fit_pt_anat[i,:],fit_pt_comb_tono_anat[i,:])
+ 
+# set which fit to use for the next computations
+if which_fit == 'tono_only':
+    fit_ctl = fit_ctl_tono
+    fit_pt = fit_pt_tono
+elif which_fit == 'anat_only':
+    fit_ctl = fit_ctl_anat
+    fit_pt = fit_pt_anat
+elif which_fit == 'comb_tono_anat':
+    fit_ctl = fit_ctl_comb_tono_anat
+    fit_pt = fit_pt_comb_tono_anat
+    print('USING COMBINED FIT')
+    
+ 
 # AVERAGE DISTANCE AND NUMBER OF VOXELS ABOVE AND BELOW
 # Controls
 mean_dist_ctl = np.zeros([ctl_number,14])
@@ -753,219 +809,6 @@ if plot_y_n_anat_pt:
         cbar = matplotlib.colorbar.ColorbarBase(cax, cmap='gray')
         cbar.ax.set_yticklabels(['< 0 convex', '','','','', '> 0 concave'])  # vertically oriented colorbar
         
-# CLASSIFY ANATOMY AND DRAW THE ANATOMIC BYSECTING LINE
-# work with Controls
-# 1) divide three levels range: very negative, close to zero, very positive
-
-ctl_number_all = np.zeros([ctl_number,3])
-
-ctl_anat_classify = np.zeros(ctl_number)
-fit_ctl_anat = np.zeros([ctl_number,2])
-
-for i in range(ctl_number):
-    #print('CONTROL {}'.format(i))
-    data = ctl_3D_data[i,:,:]
-    title = ctl_name[i]
-    xs,ys,zs,fs,an = organize_data(data)
-    idx_zeros = np.where(np.logical_and(an>=-0.085, an<=0.085))
-    idx_neg = np.where(an<-0.085)
-    idx_pos = np.where(an>0.085)
-
-    xs_zeros = [xs[i] for i in idx_zeros]
-    ys_zeros = [ys[i] for i in idx_zeros]
-    xs_pos = [xs[i] for i in idx_pos]
-    ys_pos = [ys[i] for i in idx_pos]
-    an_pos = [an[i] for i in idx_pos]
-    xs_neg = [xs[i] for i in idx_neg]
-    ys_neg = [ys[i] for i in idx_neg]
-    an_neg = [an[i] for i in idx_neg]
-
-    plot_y_n = False
-
-    if plot_y_n:
-        plt.figure()
-        plt.plot(xs_zeros,ys_zeros,'o',color = 'gray',label = 'zeros')
-        plt.plot(xs_neg,ys_neg,'o',color = 'black', label = 'concave')
-        plt.plot(xs_pos,ys_pos,'o', color = 'lightgray', label = 'convex')
-        plt.xlabel('x coordinate')
-        plt.ylabel('y coordinate')
-        #plt.legend()
-        plt.title(title)
-        plt.show()
-
-    # find number of cluster and respective size
-    get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
-    
-    coord_zeros = np.zeros([len(xs_zeros[0]),2])
-    coord_zeros[:,0] = xs_zeros[0]
-    coord_zeros[:,1] = ys_zeros[0]
-    
-    coord_pos = np.zeros([len(xs_pos[0]),2])
-    coord_pos[:,0] = xs_pos[0]
-    coord_pos[:,1] = ys_pos[0]
-    
-    coord_neg = np.zeros([len(xs_neg[0]),2])
-    coord_neg[:,0] = xs_neg[0]
-    coord_neg[:,1] = ys_neg[0]
-
-    coord_all = [coord_zeros, coord_pos, coord_neg]
-    
-    cluster_number = np.zeros(len(coord_all))
-    cluster_size_mean = np.zeros(len(coord_all))
-    cluster_nb_zeros = 0
-    cluster_nb_zeros_big = 0
-    cluster_nb_zeros_small = 0
-    cluster_nb_pos = 0
-    cluster_nb_pos_big = 0
-    cluster_nb_pos_small = 0
-    cluster_nb_neg = 0
-    cluster_nb_neg_big = 0
-    cluster_nb_neg_small = 0
-    
-    fraction_big_small = 0.09
-    eps = 1.5
-    
-    for j,X in enumerate(coord_all):
-        if np.shape(X)[0]==0:
-            cluster_size_mean[j] = 0
-            cluster_number[j] = 0
-        else:
-            clustering = DBSCAN(eps=eps, min_samples=3).fit(X)
-            labels = clustering.labels_ 
-            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
-            unique_labels = set(labels)
-            cluster_size = 0
-            for lab in unique_labels:
-                if lab != -1:
-                    idx_lab = get_indexes(lab,labels)
-                    #print('size of cluster level {} is {}'.format(j,len(idx_lab)))
-                    #print('its ratio to total number {} is {}'.format(len(xs),len(idx_lab)/len(xs)))
-                    cluster_size += len(idx_lab)
-                    fraction = len(idx_lab)/len(xs)  # classify the clusters according to their height and their size
-                    if j == 0 and fraction >= fraction_big_small:
-                        cluster_nb_zeros_big += 1
-                    elif j == 0 and fraction < fraction_big_small:
-                        cluster_nb_zeros_small += 1
-                    elif j == 1 and fraction >= fraction_big_small:
-                        cluster_nb_pos_big += 1
-                    elif j == 1 and fraction < fraction_big_small:
-                        cluster_nb_pos_small += 1
-                    elif j == 2 and fraction >= fraction_big_small:
-                        cluster_nb_neg_big += 1
-                    elif j == 2 and fraction < fraction_big_small:
-                        cluster_nb_neg_small += 1
-                    
-                    
-            if n_clusters_ != 0:
-                cluster_size_mean[j] = cluster_size/n_clusters_
-            cluster_number[j] = n_clusters_
-            # count total number of clusters per height level
-            if j == 0:
-                cluster_nb_zeros = n_clusters_
-            elif j == 1:
-                cluster_nb_pos = n_clusters_
-            elif j == 2:
-                cluster_nb_neg = n_clusters_
-            
-            # Plot results (Black removed and is used for noise instead)
-            core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
-            core_samples_mask[clustering.core_sample_indices_] = True
-            
-            colors = [plt.cm.Spectral(each)
-                      for each in np.linspace(0, 1, len(unique_labels))]
-                
-            if plot_y_n:
-                plt.figure()
-                for k, col in zip(unique_labels, colors):
-                    if k == -1:
-                        # Black used for noise.
-                        col = [0, 0, 0, 1]
-                
-                    class_member_mask = (labels == k)
-                
-                    xy = X[class_member_mask & core_samples_mask]
-                    
-                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                             markeredgecolor='k', markersize=14)
-                
-                    xy = X[class_member_mask & ~core_samples_mask]
-                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
-                             markeredgecolor='k', markersize=6)
-            
-            #plt.title('Estimated number of clusters: %d' % n_clusters_)
-            plt.show()
-            
-    #print('For control {} there are {} pos, {} neg, {} zeros'.format(i,cluster_number[0],cluster_number[1],cluster_number[2]))
-
-    # here classify the anatomy of the scan into 1. single gyrus   2. partial duplication   3.full duplication
-    # check single gyrus
-    if cluster_nb_neg_big == 1 and cluster_nb_neg<=2:
-        if cluster_nb_pos == 2:
-            if cluster_nb_pos_big >= 1:
-                if cluster_nb_zeros >= 2:
-                    if cluster_nb_zeros > 2 or cluster_nb_zeros_big == 2:
-                        ctl_anat_classify[i] = 1
-    # check partial duplication                    
-    if ctl_anat_classify[i] == 0:    
-        if cluster_nb_zeros_big <= 2:
-            if cluster_nb_pos >= 2:
-                ctl_anat_classify[i] = 2
-    # check full duplication
-    if ctl_anat_classify[i] != 1:     
-        if cluster_nb_pos_big >= 1:
-            if cluster_nb_zeros_big >= 2 or cluster_nb_zeros >= 3:
-                if cluster_nb_neg >= 2:
-                    ctl_anat_classify[i] = 3
-    #print(cluster_nb_zeros_big,cluster_nb_zeros_small,cluster_nb_pos_big,cluster_nb_pos_small,cluster_nb_neg_big,cluster_nb_neg_small)
-    #print(cluster_nb_zeros,cluster_nb_pos,cluster_nb_neg)
-    #print('classified {}'.format(ctl_anat_classify[i]))
-    
-    # BYSECTING LINE THROUGH ANATOMY
-    # divide two cases 
-    # case A) syngle gyrus --> consider only the negative values for the fit
-    if ctl_anat_classify[i] == 1:
-        
-        an_neg_rev = [-x for x in an_neg]
-        coeff_w = np.polyfit(xs_neg[0],ys_neg[0],deg = 1, w = an_neg_rev[0])
-    
-        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
-        y_fit = x_fit*coeff_w[0]+coeff_w[1]
-        
-        if plot_y_n_fit_anat_ctl:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.scatter(xs_neg[0],ys_neg[0], c = an_neg[0], cmap = 'gray')    
-            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
-            plt.title(title)
-            plt.legend()
-            plt.show()
-    
-        fit_ctl_anat[i,:] = coeff_w
-    # case B) partial or full duplication
-    if ctl_anat_classify[i] == 2 or ctl_anat_classify[i] == 3:
-        
-        weights = np.concatenate((an_pos[0],an_neg[0]))
-        xs_conc = np.concatenate((xs_pos[0],xs_neg[0]))
-        ys_conc = np.concatenate((ys_pos[0],ys_neg[0]))
-        #coeff_w = np.polyfit(xs_conc,ys_conc,deg = 1, w = weights)
-        
-        coeff_w = np.polyfit(xs_pos[0],ys_pos[0],deg = 1, w = an_pos[0])
-    
-        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
-        y_fit = x_fit*coeff_w[0]+coeff_w[1]
-        
-        if plot_y_n_fit_anat_ctl:
-            fig = plt.figure()
-            ax = fig.add_subplot(111)
-            ax.scatter(xs,ys, c = an, cmap = 'gray')    
-            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
-            plt.title(title)
-            plt.legend()
-            plt.show()
-    
-        fit_ctl_anat[i,:] = coeff_w
-    
-    
     
 # ANGLES
 # angles    
@@ -1056,7 +899,7 @@ for i in range(ctl_number):
     # to be done
     
     
-    
+
 
 
         
