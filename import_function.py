@@ -536,6 +536,9 @@ def find_angles(data,title,coeff_w,plot_y_n,plot_points):
     
     angle_out = np.degrees(angle)
     
+    # compute the distance between the two maxima
+    distance_out = np.linalg.norm(a-c)
+    
     if plot_points:            
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -547,7 +550,7 @@ def find_angles(data,title,coeff_w,plot_y_n,plot_points):
         plt.legend(loc = 'upper right')
         plt.show()
     
-    return angle_out, xs_min, ys_min, xs_max_above, ys_max_above, xs_max_below, ys_max_below
+    return angle_out, xs_min, ys_min, xs_max_above, ys_max_above, xs_max_below, ys_max_below, distance_out
 
 
 
@@ -558,9 +561,11 @@ def anatomy(data,title,plot_y_n_three_anat_regions,plot_y_n_anat_clusters, plot_
 
 # 1) divide three levels range: very negative, close to zero, very positive
     xs,ys,zs,fs,an = organize_data(data) 
-    idx_zeros = np.where(np.logical_and(an>=-0.085, an<=0.085))
-    idx_neg = np.where(an<-0.085)
-    idx_pos = np.where(an>0.085)
+    threshold_neg = - 0.085
+    threshold_pos = 0.075
+    idx_zeros = np.where(np.logical_and(an>=threshold_neg, an<=threshold_pos))
+    idx_neg = np.where(an<threshold_neg)
+    idx_pos = np.where(an>threshold_pos)
 
     xs_zeros = [xs[i] for i in idx_zeros]
     ys_zeros = [ys[i] for i in idx_zeros]
@@ -730,8 +735,8 @@ def anatomy(data,title,plot_y_n_three_anat_regions,plot_y_n_anat_clusters, plot_
             if cluster_nb_zeros_big >= 2 or cluster_nb_zeros >= 3:
                 if cluster_nb_neg >= 2:
                     anat_classify = 3
-    #print(cluster_nb_zeros_big,cluster_nb_zeros_small,cluster_nb_pos_big,cluster_nb_pos_small,cluster_nb_neg_big,cluster_nb_neg_small)
-    #print(cluster_nb_zeros,cluster_nb_pos,cluster_nb_neg)
+    print('size',cluster_nb_zeros_big,cluster_nb_zeros_small,cluster_nb_pos_big,cluster_nb_pos_small,cluster_nb_neg_big,cluster_nb_neg_small)
+    print('tot',cluster_nb_zeros,cluster_nb_pos,cluster_nb_neg)
     #print('classified {}'.format(ctl_anat_classify[i]))
     
     # BYSECTING LINE THROUGH ANATOMY
@@ -810,6 +815,253 @@ def anatomy(data,title,plot_y_n_three_anat_regions,plot_y_n_anat_clusters, plot_
         fit_anat = coeff_w
     
     return anat_classify, fit_anat
+
+# DRAW THE ANATOMIC BYSECTING LINE ON THE BASIS OF THE DUPLICATION TYPE
+
+def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_clusters, plot_y_n_fit_anat):   
+
+# 1) divide three levels range: very negative, close to zero, very positive
+    xs,ys,zs,fs,an = organize_data(data) 
+    threshold_neg = - 0.085
+    threshold_pos = 0.075
+    idx_zeros = np.where(np.logical_and(an>=threshold_neg, an<=threshold_pos))
+    idx_neg = np.where(an<threshold_neg)
+    idx_pos = np.where(an>threshold_pos)
+
+    xs_zeros = [xs[i] for i in idx_zeros]
+    ys_zeros = [ys[i] for i in idx_zeros]
+    an_zeros = [an[i] for i in idx_zeros]
+    xs_pos = [xs[i] for i in idx_pos]
+    ys_pos = [ys[i] for i in idx_pos]
+    an_pos = [an[i] for i in idx_pos]
+    xs_neg = [xs[i] for i in idx_neg]
+    ys_neg = [ys[i] for i in idx_neg]
+    an_neg = [an[i] for i in idx_neg]
+
+
+
+    if plot_y_n_three_anat_regions:
+        plt.figure()
+        plt.plot(xs_zeros,ys_zeros,'o',color = 'gray',label = 'zeros')
+        plt.plot(xs_neg,ys_neg,'o',color = 'black', label = 'concave')
+        plt.plot(xs_pos,ys_pos,'o', color = 'lightgray', label = 'convex')
+        plt.xlabel('x coordinate')
+        plt.ylabel('y coordinate')
+        #plt.legend()
+        plt.title(title)
+        plt.show()
+
+    # find number of cluster and respective size
+    get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
+    
+    coord_zeros = np.zeros([len(xs_zeros[0]),2])
+    coord_zeros[:,0] = xs_zeros[0]
+    coord_zeros[:,1] = ys_zeros[0]
+    
+    coord_pos = np.zeros([len(xs_pos[0]),2])
+    coord_pos[:,0] = xs_pos[0]
+    coord_pos[:,1] = ys_pos[0]
+    
+    coord_neg = np.zeros([len(xs_neg[0]),2])
+    coord_neg[:,0] = xs_neg[0]
+    coord_neg[:,1] = ys_neg[0]
+
+    coord_all = [coord_zeros, coord_pos, coord_neg]
+    
+    cluster_number = np.zeros(len(coord_all))
+    cluster_size_mean = np.zeros(len(coord_all))
+    cluster_nb_zeros = 0
+    cluster_nb_zeros_big = 0
+    cluster_nb_zeros_small = 0
+    cluster_nb_pos = 0
+    cluster_nb_pos_big = 0
+    cluster_nb_pos_small = 0
+    cluster_nb_neg = 0
+    cluster_nb_neg_big = 0
+    cluster_nb_neg_small = 0
+    
+    fraction_big_small = 0.09
+    eps = 1.5
+    
+    biggest_zeros_size = 0
+    biggest_pos_size = 0
+    biggest_neg_size = 0
+    biggest_zeros_idx = []
+    biggest_pos_idx = []
+    biggest_neg_idx = []
+    
+    anat_classify = 0
+    fit_anat = [0,0]
+    
+    for j,X in enumerate(coord_all):
+        if np.shape(X)[0]==0:
+            cluster_size_mean[j] = 0
+            cluster_number[j] = 0
+        else:
+            clustering = DBSCAN(eps=eps, min_samples=3).fit(X)
+            labels = clustering.labels_ 
+            n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+            unique_labels = set(labels)
+            cluster_size = 0
+            for lab in unique_labels:
+                if lab != -1:
+                    idx_lab = get_indexes(lab,labels)
+                    #print('size of cluster level {} is {}'.format(j,len(idx_lab)))
+                    #print('its ratio to total number {} is {}'.format(len(xs),len(idx_lab)/len(xs)))
+                    cluster_size += len(idx_lab)
+                    fraction = len(idx_lab)/len(xs)  
+                    # classify the clusters according to their height and their size
+                    if j == 0 and fraction >= fraction_big_small:
+                        cluster_nb_zeros_big += 1
+                    elif j == 0 and fraction < fraction_big_small:
+                        cluster_nb_zeros_small += 1
+                    elif j == 1 and fraction >= fraction_big_small:
+                        cluster_nb_pos_big += 1
+                    elif j == 1 and fraction < fraction_big_small:
+                        cluster_nb_pos_small += 1
+                    elif j == 2 and fraction >= fraction_big_small:
+                        cluster_nb_neg_big += 1
+                    elif j == 2 and fraction < fraction_big_small:
+                        cluster_nb_neg_small += 1
+                        
+                    # record the biggest cluster per level
+                    if j == 0 and len(idx_lab) >= biggest_zeros_size:
+                        biggest_zeros_size = len(idx_lab)
+                        biggest_zeros_idx = idx_lab 
+                    elif j == 1 and len(idx_lab) >= biggest_pos_size:
+                        biggest_pos_size = len(idx_lab)
+                        biggest_pos_idx = idx_lab
+                    elif j == 2 and len(idx_lab) >= biggest_neg_size:
+                        biggest_neg_size = len(idx_lab)
+                        biggest_neg_idx = idx_lab
+                    
+                    
+            if n_clusters_ != 0:
+                cluster_size_mean[j] = cluster_size/n_clusters_
+            cluster_number[j] = n_clusters_
+            # count total number of clusters per height level
+            if j == 0:
+                cluster_nb_zeros = n_clusters_
+            elif j == 1:
+                cluster_nb_pos = n_clusters_
+            elif j == 2:
+                cluster_nb_neg = n_clusters_
+            
+            # Plot results (Black removed and is used for noise instead)
+            core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
+            core_samples_mask[clustering.core_sample_indices_] = True
+            
+            colors = [plt.cm.Spectral(each)
+                      for each in np.linspace(0, 1, len(unique_labels))]
+                
+            if plot_y_n_anat_clusters:
+                plt.figure()
+                for k, col in zip(unique_labels, colors):
+                    if k == -1:
+                        # Black used for noise.
+                        col = [0, 0, 0, 1]
+                
+                    class_member_mask = (labels == k)
+                
+                    xy = X[class_member_mask & core_samples_mask]
+                    
+                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                             markeredgecolor='k', markersize=14)
+                
+                    xy = X[class_member_mask & ~core_samples_mask]
+                    plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
+                             markeredgecolor='k', markersize=6)
+            
+                #plt.title('Estimated number of clusters: %d' % n_clusters_)
+                plt.show()
+            
+    #print('For control {} there are {} pos, {} neg, {} zeros'.format(i,cluster_number[0],cluster_number[1],cluster_number[2]))
+
+    
+    # BYSECTING LINE THROUGH ANATOMY
+    # divide two cases 
+    # case A) syngle gyrus --> consider only the negative values for the fit
+    if dupl_type == 'S':
+        
+        w_main_neg = [an_neg[0][x] for x in biggest_neg_idx]
+        xs_main_neg = [xs_neg[0][x] for x in biggest_neg_idx]
+        ys_main_neg = [ys_neg[0][x] for x in biggest_neg_idx]
+        
+        an_neg_rev = [-x for x in w_main_neg]
+        coeff_w = np.polyfit(xs_main_neg,ys_main_neg,deg = 1, w = w_main_neg)
+    
+        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
+        y_fit = x_fit*coeff_w[0]+coeff_w[1]
+        
+        if plot_y_n_fit_anat:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(xs,ys, c = an, cmap = 'gray')    
+            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
+            plt.title(title)
+            plt.legend()
+            plt.show()
+    
+        fit_anat = coeff_w
+    # case B) partial duplication
+    if dupl_type == 'PD':
+        
+        weights = np.concatenate((an_pos[0],an_neg[0]))
+        xs_conc = np.concatenate((xs_pos[0],xs_neg[0]))
+        ys_conc = np.concatenate((ys_pos[0],ys_neg[0]))
+        
+        w_main_zeros = [an_zeros[0][x] for x in biggest_zeros_idx]
+        xs_main_zeros = [xs_zeros[0][x] for x in biggest_zeros_idx]
+        ys_main_zeros = [ys_zeros[0][x] for x in biggest_zeros_idx]
+        
+        #coeff_w = np.polyfit(xs_conc,ys_conc,deg = 1, w = weights)  # first way --> terrible results
+        
+        coeff_w_1 = np.polyfit(xs_main_zeros,ys_main_zeros,deg = 1, w = w_main_zeros)  # second way --> not good but not the worse
+ 
+        coeff_w_2 = np.polyfit(xs_neg[0],ys_neg[0],deg = 1, w = an_neg[0])  # second way --> mmm
+        
+        coeff_w = 0.7*coeff_w_1+0.3*coeff_w_2
+    
+        x_fit = np.arange(np.nanmin(xs_zeros[0]),np.nanmax(xs_zeros[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
+        y_fit = x_fit*coeff_w[0]+coeff_w[1]
+        y_fit_1 = x_fit*coeff_w_1[0]+coeff_w_1[1]
+        y_fit_2 = x_fit*coeff_w_2[0]+coeff_w_2[1]
+        
+        if plot_y_n_fit_anat:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(xs,ys, c = an, cmap = 'gray')    
+            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
+            plt.plot(x_fit,y_fit_1,'b',label = 'fit on zeros')
+            plt.plot(x_fit,y_fit_2,'g',label = 'fit on neg')
+            plt.title(title)
+            plt.legend()
+            plt.show()
+    
+        fit_anat = coeff_w
+        
+    # case C) complete duplication
+    if dupl_type == 'CD':    
+        w_main_pos = [an_pos[0][x] for x in biggest_pos_idx]
+        xs_main_pos = [xs_pos[0][x] for x in biggest_pos_idx]
+        ys_main_pos = [ys_pos[0][x] for x in biggest_pos_idx]
+        coeff_w = np.polyfit(xs_main_pos,ys_main_pos,deg = 1, w = w_main_pos)
+    
+        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
+        y_fit = x_fit*coeff_w[0]+coeff_w[1]
+        
+        if plot_y_n_fit_anat:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            ax.scatter(xs,ys, c = an, cmap = 'gray')    
+            plt.plot(x_fit,y_fit,'k',label = 'linear fit')
+            plt.title(title)
+            plt.legend()
+            plt.show()
+    
+        fit_anat = coeff_w
+    
+    return fit_anat
 
 def cfr_bysecting_lines(data,title,fit_tono,fit_anat,fit_comb_tono_anat):
     xs,ys,zs,fs,an = organize_data(data)

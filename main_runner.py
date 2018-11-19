@@ -348,6 +348,65 @@ pt_name_relabelled = ['Patient re-1 (CTL1LH)',
                       'Patient re-27 (PT24RH)'
                       ]
 
+ctl_dupl_relab = ['CD',
+                  'S',
+                  'CD',
+                  'S',
+                  'PD',
+                  'CD',
+                  'S',
+                  'S',
+                  'CD',
+                  'S',
+                  'PD',
+                  'CD',
+                  'PD',
+                  'PD',
+                  'S',
+                  'CD',
+                  'S',
+                  'PD',
+                  'PD',
+                  'CD',
+                  'CD',
+                  'CD',
+                  'S',
+                  'PD',
+                  'PD',
+                  'CD',
+                  'S',
+                  'S',
+                  'CD',
+                  'CD',
+                  'S']
+pt_dupl_relab = ['S',
+                 'S',
+                 'S',
+                 'S',
+                 'CD',
+                 'S',
+                 'S',
+                 'PD',
+                 'S',
+                 'CD',
+                 'CD',
+                 'PD',
+                 'S',
+                 'PD',
+                 'CD',
+                 'CD',
+                 'PD',
+                 'CD',
+                 'CD',
+                 'S',
+                 'S',
+                 'PD',
+                 'S',
+                 'S',
+                 'PD',
+                 'PD',
+                 'PD']                    
+
 # make your choice!
 # 1) which data
 use_norm_data = False
@@ -365,6 +424,8 @@ plot_y_n_fit_ctl = False
 plot_y_n_fit_pt = False
 plot_y_n_cfr_bysect_ctl = False
 plot_y_n_cfr_bysect_pt = False
+plot_y_n_bysecting_lines_angle_ctl = True
+plot_y_n_bysecting_lines_angle_pt = False
 plot_y_n_dist_each_ctl = False
 plot_y_n_dist_ave_ctl = False
 plot_y_n_dist_each_pt = False
@@ -395,6 +456,8 @@ plot_y_n_three_anat_regions_ctl = False
 plot_y_n_three_anat_regions_pt = False
 plot_y_n_anat_clusters_ctl = False
 plot_y_n_anat_clusters_pt = False
+plot_y_n_hist_dist_anat_ctl = False
+plot_y_n_hist_dist_anat_pt = False
 save_figures = False
 output_dir = "../figures/all_maps"
 
@@ -569,19 +632,25 @@ for i in range(pt_number):
 ctl_anat_classify = np.zeros(ctl_number)  # which gyrus shape does the person have?
 fit_ctl_anat = np.zeros([ctl_number,2])   # fit of parameters on the basis of anatomy
 for i in range(ctl_number):
-    ctl_anat_classify[i], fit_ctl_anat[i,:] = anatomy(ctl_3D_data[i,:,:],ctl_name[i],plot_y_n_three_anat_regions_ctl,plot_y_n_anat_clusters_ctl,plot_y_n_fit_anat_ctl)
+    print(ctl_name[i])
+    #ctl_anat_classify[i], fit_ctl_anat[i,:] = anatomy(ctl_3D_data[i,:,:],ctl_name[i],plot_y_n_three_anat_regions_ctl,plot_y_n_anat_clusters_ctl,plot_y_n_fit_anat_ctl)
+    fit_ctl_anat[i,:] = anatomy_new(ctl_3D_data[i,:,:],ctl_name[i], ctl_dupl_relab[i], plot_y_n_three_anat_regions_ctl,plot_y_n_anat_clusters_ctl,plot_y_n_fit_anat_ctl)
 
 # Patients
 pt_anat_classify = np.zeros(pt_number)  # which gyrus shape does the person have?
 fit_pt_anat = np.zeros([pt_number,2])   # fit of parameters on the basis of anatomy
 for i in range(pt_number):
-    pt_anat_classify[i], fit_pt_anat[i,:] = anatomy(pt_3D_data[i,:,:],pt_name[i],plot_y_n_three_anat_regions_pt,plot_y_n_anat_clusters_pt,plot_y_n_fit_anat_pt)
+    #pt_anat_classify[i], fit_pt_anat[i,:] = anatomy(pt_3D_data[i,:,:],pt_name[i],plot_y_n_three_anat_regions_pt,plot_y_n_anat_clusters_pt,plot_y_n_fit_anat_pt)
+    fit_pt_anat[i,:] = anatomy_new(pt_3D_data[i,:,:],pt_name[i], pt_dupl_relab[i], plot_y_n_three_anat_regions_pt,plot_y_n_anat_clusters_pt,plot_y_n_fit_anat_pt)
        
 # C) Combined tono and anat  ---> tono weights 20%, anat weights 80%
+# which weights you want to assign to the two lines?
+perc_tono = 0.5
+perc_anat = 1.-perc_tono
 # Controls
-fit_ctl_comb_tono_anat = 0.2*fit_ctl_tono+0.8*fit_ctl_anat
+fit_ctl_comb_tono_anat = perc_tono*fit_ctl_tono+perc_anat*fit_ctl_anat
 # Patients
-fit_pt_comb_tono_anat = 0.2*fit_pt_tono+0.8*fit_pt_anat
+fit_pt_comb_tono_anat = perc_tono*fit_pt_tono+perc_anat*fit_pt_anat
 
 # Plot the comparison
 # Controls
@@ -594,6 +663,32 @@ if plot_y_n_cfr_bysect_pt:
     for i in range(pt_number):
         cfr_bysecting_lines(pt_3D_data[i,:,:],pt_name[i],fit_pt_tono[i,:],fit_pt_anat[i,:],fit_pt_comb_tono_anat[i,:])
  
+# Find the angle between the tonotopic and the anatomic bysecting lines
+# Controls
+if plot_y_n_bysecting_lines_angle_ctl:
+    theta_diff_ctl = np.zeros(ctl_number)
+    for i in range(ctl_number):
+        theta_tono = np.arctan(fit_ctl_tono[i,0])
+        theta_anat = np.arctan(fit_ctl_anat[i,0])
+        theta_diff_ctl[i] = np.abs(theta_tono-theta_anat)
+    plt.figure()
+    plt.hist(theta_diff_ctl,bins = 15)
+    plt.xlabel('Theta [degrees]')
+    plt.ylabel('Occurrency')
+    plt.title('CONTROLS Angle between tonotopic and anatomic bysecting lines')
+# Patients
+if plot_y_n_bysecting_lines_angle_pt:
+    theta_diff_pt = np.zeros(pt_number)
+    for i in range(pt_number):
+        theta_tono = np.arctan(fit_pt_tono[i,0])
+        theta_anat = np.arctan(fit_pt_anat[i,0])
+        theta_diff_pt[i] = np.abs(theta_tono-theta_anat)
+    plt.figure()
+    plt.hist(theta_diff_pt,bins = 15)
+    plt.xlabel('Theta [degrees]')
+    plt.ylabel('Occurrency')
+    plt.title('PATIENTS Angle between tonotopic and anatomic bysecting lines')    
+    
 # set which fit to use for the next computations
 if which_fit == 'tono_only':
     fit_ctl = fit_ctl_tono
@@ -818,15 +913,25 @@ angle_single_ctl = []
 angle_partial_ctl = []
 angle_complete_ctl = []
 
+dist_ctl = np.zeros(ctl_number)
+dist_single_ctl = []
+dist_partial_ctl = []
+dist_complete_ctl = []
+
 for i in range(ctl_number):
-    angle_ctl[i],_,_,_,_,_,_ = find_angles(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl[i,:],plot_y_n_angles_ctl,plot_y_n_min_and_max_ctl)
+    angle_ctl[i],_,_,_,_,_,_,dist_ctl[i] = find_angles(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl[i,:],plot_y_n_angles_ctl,plot_y_n_min_and_max_ctl)
 
     if ctl_anat_classify[i] == 1:
         angle_single_ctl += [angle_ctl[i]]
+        dist_single_ctl += [dist_ctl[i]]
+        
     elif ctl_anat_classify[i] == 2:
         angle_partial_ctl += [angle_ctl[i]]
+        dist_partial_ctl += [dist_ctl[i]]
+        
     elif ctl_anat_classify[i] == 3:
         angle_complete_ctl += [angle_ctl[i]]
+        dist_complete_ctl += [dist_ctl[i]]
         
     
 if plot_y_n_angles_ctl:
@@ -838,27 +943,80 @@ if plot_y_n_angles_ctl:
     
 if plot_y_n_hist_angles_anat_ctl:
     plt.figure()
-    plt.hist(angle_single_ctl, alpha = 0.4, label = 'Single gyrus', density = False, stacked = False)
-    plt.hist(angle_partial_ctl, alpha = 0.4, label = 'Partial duplication', density = False, stacked = False)
-    plt.hist(angle_complete_ctl, alpha = 0.4, label = 'Complete duplication', density = False, stacked = False)
+    plt.hist(angle_single_ctl, alpha = 0.4, bins = 30, label = 'Single gyrus', density = False, stacked = False)
+    plt.hist(angle_partial_ctl, alpha = 0.4, bins = 30, label = 'Partial duplication', density = False, stacked = False)
+    plt.hist(angle_complete_ctl, alpha = 0.4, bins = 30, label = 'Complete duplication', density = False, stacked = False)
     plt.title('CONTROLS')
     plt.xlabel('Angle')
+    plt.ylabel('Occurrency')
+    plt.legend()
+    plt.show()
+if plot_y_n_hist_dist_anat_ctl:
+    plt.figure()
+    plt.hist(dist_single_ctl, alpha = 0.4, bins = 30, label = 'Single gyrus', density = False, stacked = False)
+    plt.hist(dist_partial_ctl, alpha = 0.4, bins = 30, label = 'Partial duplication', density = False, stacked = False)
+    plt.hist(dist_complete_ctl, alpha = 0.4, bins = 30, label = 'Complete duplication', density = False, stacked = False)
+    plt.title('CONTROLS')
+    plt.xlabel('Distance')
     plt.ylabel('Occurrency')
     plt.legend()
     plt.show()
 
 # work with Patients
 angle_pt = np.zeros(pt_number)
+angle_single_pt = []
+angle_partial_pt = []
+angle_complete_pt = []
+
+dist_pt = np.zeros(pt_number)
+dist_single_pt = []
+dist_partial_pt = []
+dist_complete_pt = []
 
 for i in range(pt_number):
-    angle_pt[i],_,_,_,_,_,_ = find_angles(pt_3D_data[i,:,:],pt_name[i],fit_pt[i,:],plot_y_n_angles_pt,plot_y_n_min_and_max_pt)
+    angle_pt[i],_,_,_,_,_,_,dist_pt[i] = find_angles(pt_3D_data[i,:,:],pt_name[i],fit_pt[i,:],plot_y_n_angles_pt,plot_y_n_min_and_max_pt)
     
+    if pt_anat_classify[i] == 1:
+            angle_single_pt += [angle_pt[i]]
+            dist_single_pt += [dist_pt[i]]
+            
+    elif pt_anat_classify[i] == 2:
+        angle_partial_pt += [angle_pt[i]]
+        dist_partial_pt += [dist_pt[i]]
+        
+    elif pt_anat_classify[i] == 3:
+        angle_complete_pt += [angle_pt[i]]
+        dist_complete_pt += [dist_pt[i]]
+               
 if plot_y_n_angles_pt:
     plt.figure()
     plt.hist(angle_pt, bins = 16, alpha = 0.7, density = False, stacked = False)
     plt.title('PATIENTS')
     plt.xlabel('Angle')
     plt.ylabel('Occurrency')
+    
+if plot_y_n_hist_angles_anat_pt:
+    plt.figure()
+    plt.hist(angle_single_pt, alpha = 0.4, bins = 30, label = 'Single gyrus', density = False, stacked = False)
+    plt.hist(angle_partial_pt, alpha = 0.4, bins = 30, label = 'Partial duplication', density = False, stacked = False)
+    plt.hist(angle_complete_pt, alpha = 0.4, bins = 30, label = 'Complete duplication', density = False, stacked = False)
+    plt.title('PATIENTS')
+    plt.xlabel('Angle')
+    plt.ylabel('Occurrency')
+    plt.legend()
+    plt.show()
+if plot_y_n_hist_dist_anat_pt:
+    plt.figure()
+    plt.hist(dist_single_pt, alpha = 0.4, bins = 30, label = 'Single gyrus', density = False, stacked = False)
+    plt.hist(dist_partial_pt, alpha = 0.4, bins = 30, label = 'Partial duplication', density = False, stacked = False)
+    plt.hist(dist_complete_pt, alpha = 0.4, bins = 30, label = 'Complete duplication', density = False, stacked = False)
+    plt.title('PATIENTS')
+    plt.xlabel('Distance')
+    plt.ylabel('Occurrency')
+    plt.legend()
+    plt.show()
+    
+
 
 # RELATE ANGLES AND HESCHL GYRUS DUPLICATION
 # work with Controls
@@ -869,7 +1027,7 @@ if plot_y_n_angles_pt:
 
 for i in range(ctl_number):
     # find the points
-    angle_ctl[i], xs_min, ys_min, xs_max_above, ys_max_above, xs_max_below, ys_max_below= find_angles(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl[i,:],plot_y_n_angles_ctl,plot_y_n_min_and_max_ctl)
+    angle_ctl[i], xs_min, ys_min, xs_max_above, ys_max_above, xs_max_below, ys_max_below,_= find_angles(ctl_3D_data[i,:,:],ctl_name[i],fit_ctl[i,:],plot_y_n_angles_ctl,plot_y_n_min_and_max_ctl)
     # plot the points on the anatomy map
     data = ctl_3D_data[i,:,:]
     title = ctl_name[i]
