@@ -5,9 +5,10 @@ Created on Tue Nov 13 22:32:47 2018
 @author: Giorgia
 """
 import numpy as np
+import random
 
 # This script contains a function that returns a list with the name of the files and the corresponding labels
-def define_data_and_labels(which_dataset):
+def define_data_and_labels(which_dataset,balance):
     ctl_list_norm = ['CTL1_tono_voi_onRef_PAC_RH.txt','CTL1_tono_voi_onRef_PAC_LH.txt',
                  'CTL2_tono_voi_onRef_PAC_RH.txt','CTL2_tono_voi_onRef_PAC_LH.txt',
                  'CTL3_tono_voi_onRef_PAC_RH.txt','CTL3_tono_voi_onRef_PAC_LH.txt',
@@ -908,5 +909,30 @@ def define_data_and_labels(which_dataset):
         data_dupl = big_dataset_dupl
         data_names = big_dataset_names
         targets = big_dataset_targets
+        
+    if balance:
+        print('Reducing the dataset to balance the classes')
+        get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
+        idx_1 = get_indexes(1,targets)
+        idx_0 = get_indexes(0,targets)
+        to_remove_certain = [1,3,17,18,35,37,65,69,71,75,76,81,82,93,94,96,109,110]
+        to_remove_maybe = [1,3,17,18,35,37,65,69,71,75,76,81,82,93,94,96,109,110,1,3,5,12,23,24,31,40,43,44,48,70,83]
+        to_remove_maybe_side = [1,3,17,18,35,37,65,69,71,75,76,81,82,93,94,96,109,110,1,3,5,12,23,24,31,40,43,44,48,70,83,32,56,57,67]
+        to_remove = to_remove_maybe_side
+        to_remove = [x-1 for x in to_remove]
+        idx_0 = [e for e in idx_0 if e not in to_remove]
+        data_names_0 = [data_names[i] for i in idx_0]
+        #print(data_names_0)
+        num_per_class = len(idx_1)
+        idx_0_reduced = np.random.choice(idx_0,num_per_class)
+        idx_new = np.concatenate((idx_1,idx_0_reduced))
+        random.shuffle(idx_new)
+        data_tono = [data_tono[i] for i in idx_new]
+        data_anat = [data_anat[i] for i in idx_new]
+        data_dupl = [data_dupl[i] for i in idx_new]
+        data_names = [data_names[i] for i in idx_new]
+        
+        targets = [targets[i] for i in idx_new]
+        
         
     return data_tono, data_anat, data_dupl, data_names, targets

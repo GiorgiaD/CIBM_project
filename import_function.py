@@ -10,6 +10,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.cluster import DBSCAN
 import matplotlib
+from scipy.spatial import ConvexHull
+import matplotlib.path as mplPath
+import pylab
+import math
+import matplotlib.patches as patches
 
 def import_function(file_name):
     mydata = np.loadtxt(file_name,skiprows = 10) 
@@ -51,8 +56,10 @@ def organize_data(data):
     an = data[4,0:until]
     return xs,ys,zs,fs,an
     
-def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix for one scan with fs already 14-fs
+def bysect_line(data, title, coeff_w_anat, target = 0, plot_y_n = False, target_yn = False): # data is the slice of 3D matrix for one scan with fs already 14-fs
     xs,ys,zs,fs,an = organize_data(data) 
+    plot_hull = False
+    xs,ys,zs,fs,an = data_in_hull(xs,ys,zs,fs,an,margin = 0.32,plot_hull = plot_hull)
     
     get_indexes = lambda x, x_s: [i for (y, i) in zip(x_s, range(len(x_s))) if x == y]
 
@@ -72,7 +79,9 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
     fs_bordeaux = [fs[i] for i in idx_bordeaux]
     fs_high = np.concatenate((fs_red,fs_bordeaux))
     
-    min_xs = 200
+    min_xs = 300
+    
+    #print(len(xs_high))
     
     #print('xs_high is',len(xs_high))
     
@@ -81,34 +90,47 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
         idx_orange = get_indexes(11,fs)
         xs_orange = [xs[i] for i in idx_orange]
         ys_orange = [ys[i] for i in idx_orange]
-        fs_orange = [fs[i] for i in idx_orange]
+        fs_orange = [fs[i]*0.9 for i in idx_orange]
         xs_high = np.concatenate((xs_high,xs_orange))
         ys_high = np.concatenate((ys_high,ys_orange))
         fs_high = np.concatenate((fs_high,fs_orange))
         #print('xs_high after orange is',len(xs_high))
         
-    if len(xs_high) < min_xs:
-        #print('consider orange too: xs_high = {}'.format(len(xs_high)))
+    if len(xs_high) < min_xs-60:
+        #print('consider yellow too: xs_high = {}'.format(len(xs_high)))
         idx_orange = get_indexes(10,fs)
         xs_orange = [xs[i] for i in idx_orange]
         ys_orange = [ys[i] for i in idx_orange]
-        fs_orange = [fs[i] for i in idx_orange]
+        fs_orange = [fs[i]*0.8 for i in idx_orange]
         xs_high = np.concatenate((xs_high,xs_orange))
         ys_high = np.concatenate((ys_high,ys_orange))
         fs_high = np.concatenate((fs_high,fs_orange))
         #print('xs_high after orange 2 is',len(xs_high))    
         
     
-    # among the previous voxels, now keep only the ones belonging to the biggest low frequency cluster
+    # among the selected voxels, now keep only the ones belonging to the biggest low frequency cluster
     biggest_size = 0
+    size_difference = 0
     biggest_idx = []
+    
+    # among the selected voxels, check the cluster which is closest to the anatomic line
+    smallest_distance = 1000000
+    distance_difference = 0
+    distance_of_biggest = 0
+    distance_idx = []   
+    p1 = [0,coeff_w_anat[1]]
+    p2 = [1,coeff_w_anat[0]+coeff_w_anat[1]]
     
     X = np.zeros([len(xs_high),2])
     X[:,0] = xs_high
     X[:,1] = ys_high
     
-    
-    eps = 1.85
+    if len(xs_high)>300:
+        eps = 1.1
+    elif len(xs_high)>175:
+        eps = 1.4
+    else:
+        eps = 2.0
     
     if np.shape(X)[0]==0:
         print('WARNING : fitting cannot be performed --> data is empty')
@@ -119,14 +141,58 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
         n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
         unique_labels = set(labels)
         cluster_size = 0
-        for lab in unique_labels:
+        for lab in unique_labels: # for each cluster
             if lab != -1:
                 idx_lab = get_indexes(lab,labels)
                 cluster_size = len(idx_lab)
                 
-                if cluster_size > biggest_size:
+                if cluster_size > biggest_size:  # update the biggest cluster when a bigger one is found
+                    biggest_update = 1
+                    size_difference = np.abs(biggest_size-cluster_size)
                     biggest_size = cluster_size
-                    biggest_idx = idx_lab
+                    biggest_idx = idx_lab  
+                else:
+                    biggest_update = 0
+                    
+                # here compute the mean distance of points in one cluster from the line
+                #dist = 0
+                #for point in range(len(idx_lab)): # for each point in the cluster
+                #    P = [xs_high[point], ys_high[point]]
+                #    p1minusp2 = [x1 - x2 for (x1, x2) in zip(p1, p2)]
+                #    p1minusP = [x1 - x2 for (x1, x2) in zip(p1, P)]
+                #    dist += norm(np.cross(p1minusp2, p1minusP))/norm(p1minusp2)
+                #mean_dist = dist/len(idx_lab)
+                
+                # compute distance from center of cluster to line
+                xs_now = [xs_high[x] for x in idx_lab]
+                ys_now = [ys_high[x] for x in idx_lab]
+                center_cluster_x = np.mean(xs_now)
+                center_cluster_y = np.mean(ys_now)
+                P = [center_cluster_x,center_cluster_y]
+                p2minusp1 = [x1 - x2 for (x1, x2) in zip(p2,p1)]
+                p2minusP = [x1 - x2 for (x1, x2) in zip(p2, P)]
+                
+                mean_dist = norm(np.cross(p2minusp1,p2minusP))/norm(p2minusp1)
+                
+                if mean_dist < smallest_distance and cluster_size>20:  # update the biggest cluster when a bigger one is found
+                    smallest_distance = mean_dist
+                    distance_idx = idx_lab 
+                if biggest_update == 1:
+                    distance_of_biggest = mean_dist
+                distance_difference = np.abs (distance_of_biggest - smallest_distance)
+                  
+                #print('distance of this cluster',mean_dist)
+                #print('size of this cluster',cluster_size)
+                #plt.figure()
+                #plt.scatter(xs_now,ys_now, c = 'b', alpha = 0.3)
+                #plt.plot(P[0],P[1],'ro')
+                #x_fit = np.arange(np.nanmin(xs),np.nanmax(xs),0.01) 
+                #y_fit_w_anat = x_fit*coeff_w_anat[0]+coeff_w_anat[1]
+                #plt.plot(x_fit,y_fit_w_anat,'r',label = 'anatomic fit')
+                    
+        #print('difference in size of 2biggests: ', size_difference)
+        #print('difference in distance of closest and biggest', distance_difference)
+        #print('smallest distance', smallest_distance)
                     
         # Plot results (Black removed and is used for noise instead)
         core_samples_mask = np.zeros_like(clustering.labels_, dtype=bool)
@@ -148,17 +214,23 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
             #plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),markeredgecolor='k', markersize=14)
         
             xy = X[class_member_mask & ~core_samples_mask]
-            #plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),markeredgecolor='k', markersize=6)
+            #---plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),markeredgecolor='k', markersize=6)
     
         #plt.title('Estimated number of clusters: %d' % n_clusters_)
         #plt.show()
                     
     #print('biggest size is ',biggest_size)
+    
+    if smallest_distance < 4.0 and distance_difference > 6:
+        chosen_idx = distance_idx
+        #print('Fitting on closest cluster to anatomy, size: ',len(distance_idx))
+    else:
+        chosen_idx = biggest_idx
      
-    if biggest_size > 60:  # for big cluster you can consider only it, otherwise consider everything else too                
-        w_main = [fs_high[x] for x in biggest_idx]
-        xs_main = [xs_high[x] for x in biggest_idx]
-        ys_main = [ys_high[x] for x in biggest_idx]
+    if biggest_size > 18:  # for big cluster you can consider only it, otherwise consider everything else too                
+        w_main = [fs_high[x] for x in chosen_idx]
+        xs_main = [xs_high[x] for x in chosen_idx]
+        ys_main = [ys_high[x] for x in chosen_idx]
     else:
         w_main = fs_high
         xs_main = xs_high
@@ -167,11 +239,14 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
     
     coeff_w = np.polyfit(xs_main,ys_main,deg = 1, w = w_main)
     
+    #print(w_main)
+    
     #plt.plot(xs_main,ys_main,'o')
     
     
     ## the following small commented section is the old one 
     #coeff = np.polyfit(xs_high,ys_high,1)
+    xs,ys,zs,fs,an = organize_data(data) 
     x_fit = np.arange(np.nanmin(xs),np.nanmax(xs),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
     #y_fit = x_fit*coeff[0]+coeff[1]
     #uno = [1]*len(xs_red)
@@ -182,19 +257,27 @@ def bysect_line(data, title, plot_y_n = False): # data is the slice of 3D matrix
     #coeff_w = np.polyfit(xs_high,ys_high,deg = 1, w = w)
     y_fit_w = x_fit*coeff_w[0]+coeff_w[1]
     
+    y_fit_w_anat = x_fit*coeff_w_anat[0]+coeff_w_anat[1]
+    
     if plot_y_n:
+        
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.scatter(xs,ys, c = fs, cmap = 'jet')    
+        ax.scatter(xs,ys, c = fs, cmap = 'jet') 
+        ax.scatter(xs_main,ys_main, c = 'k', alpha = 0.7)
         #plt.plot(x_fit,y_fit,'k',label = 'linear fit')
-        plt.plot(x_fit,y_fit_w,'b',label = 'weighted fit on main cluster')
+        plt.plot(x_fit,y_fit_w,'b',label = 'weighted fit on main cluster',linewidth = 5)
+        plt.plot(x_fit,y_fit_w_anat,'r',label = 'anatomic fit',linewidth = 5)
+        if target_yn:
+            title += ' class '
+            title += str(target)
         plt.title(title)
+        plt.legend()
         cax, _ = matplotlib.colorbar.make_axes(ax)
         cbar = matplotlib.colorbar.ColorbarBase(cax, cmap='jet')
         cbar.ax.set_yticklabels(['high frequency', '','','','', 'low frequency'])  # vertically oriented colorbar
-        plt.legend()
         plt.show()
-        output_dir = "../../figures/all_maps"
+        output_dir = "../../figures/big_dataset/bysecting/tono/"
         title = title+'_axis_tono'
         fig.savefig('{}/{}.png'.format(output_dir,title))
             
@@ -418,12 +501,22 @@ def three_f_ranges(data,title, coeff_w, plot_y_n = False, eps = 1.5, min_samples
             #plt.title('Estimated number of clusters: %d' % n_clusters_)
             plt.show()
             
-    cluster_number = [cluster_number[0]+cluster_number[1],cluster_number[2]+cluster_number[3],cluster_number[4]+cluster_number[5]]
-    cluster_size_mean = [cluster_size_mean[0]+cluster_size_mean[1],cluster_size_mean[2]+cluster_size_mean[3],cluster_size_mean[4]+cluster_size_mean[5]]
-    cluster_size_mean = [i/2 for i in cluster_size_mean]
-            
-    return cluster_number, cluster_size_mean
-            
+    cluster_number_ = [cluster_number[0]+cluster_number[1],cluster_number[2]+cluster_number[3],cluster_number[4]+cluster_number[5]]
+    cluster_size_mean_ = [cluster_size_mean[0]+cluster_size_mean[1],cluster_size_mean[2]+cluster_size_mean[3],cluster_size_mean[4]+cluster_size_mean[5]]
+    cluster_size_mean_ = [i/2 for i in cluster_size_mean]
+    
+    cluster_num_low = cluster_number[0]+cluster_number[1]
+    cluster_num_med = cluster_number[2]+cluster_number[3]
+    cluster_num_high = cluster_number[4]+cluster_number[5]
+    cluster_size_low = cluster_size_mean[0]+cluster_size_mean[1]
+    cluster_size_low = 0.5*cluster_size_low
+    cluster_size_med = cluster_size_mean[2]+cluster_size_mean[3]
+    cluster_size_med = 0.5*cluster_size_med
+    cluster_size_high = cluster_size_mean[4]+cluster_size_mean[5]
+    cluster_size_high = 0.5*cluster_size_high
+                            
+    
+    return cluster_number, cluster_size_mean, cluster_num_low, cluster_num_med, cluster_num_high, cluster_size_low, cluster_size_med, cluster_size_high            
 
 def matrixing(data, title, pixels, plot_y_n):
     xs,ys,zs,fs,an = organize_data(data) 
@@ -873,13 +966,33 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
 
 # 1) divide three levels range: very negative, close to zero, very positive
     xs,ys,zs,fs,an = organize_data(data) 
+    plot_hull = False
+    xs,ys,zs,fs,an = data_in_hull(xs,ys,zs,fs,an,margin = 0.25, plot_hull = plot_hull)
+    
     #print('hei hei hei')
     threshold_neg = - 0.085   # originally it was -0.085
-    threshold_pos = 0.29  # originally it was 0.075 for the smaller maps
+    threshold_pos = 0.21  # originally it was 0.075 for the smaller maps
     idx_zeros = np.where(np.logical_and(an>=threshold_neg, an<=threshold_pos))
     idx_neg = np.where(an<threshold_neg)
     idx_pos = np.where(an>threshold_pos)
-
+    
+    
+    '''
+    print(title+'  '+dupl_type)
+    print('number of white ::', np.shape(idx_pos)[1])
+    print('number of black ::', np.shape(idx_neg)[1])
+    '''
+    
+    if np.shape(idx_pos)[1]<50:
+        threshold_pos = 0.17
+        idx_pos = np.where(an>threshold_pos)
+        print('number of white increased to ::', np.shape(idx_pos)[1])
+    '''
+    if np.shape(idx_neg)[1]>1100:
+        threshold_neg = -0.1
+        idx_neg = np.where(an<threshold_neg)
+        print('number of black decreased to ::', np.shape(idx_neg)[1])
+    '''
     xs_zeros = [xs[i] for i in idx_zeros]
     ys_zeros = [ys[i] for i in idx_zeros]
     an_zeros = [an[i] for i in idx_zeros]
@@ -990,7 +1103,7 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
                         biggest_neg_size = len(idx_lab)
                         biggest_neg_idx = idx_lab
                         
-                    # white cluster closer to to center
+                    # white cluster closer to center
                     distance = 0
                     cnt = 0
                     if j == 1:
@@ -1001,10 +1114,11 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
                             cnt += 1
                             distance = np.sqrt((xs_white[c]-xs_center)*(xs_white[c]-xs_center)+(ys_white[c]-ys_center)*(ys_white[c]-ys_center))
                             if distance < distance_in_cluster:
-                                distance_in_cluster = distance
+                                distance_in_cluster = distance 
                         if distance_in_cluster < min_distance:
                             min_distance = distance_in_cluster
                             closest_pos_idx = idx_lab
+                            
                         
                     
                     
@@ -1053,6 +1167,7 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
     # BYSECTING LINE THROUGH ANATOMY
     # divide two cases 
     # case A) syngle gyrus --> consider only the negative values for the fit
+    xs,ys,zs,fs,an = organize_data(data)
     if dupl_type == 'S':
         
         w_main_neg = [an_neg[0][x] for x in biggest_neg_idx]
@@ -1076,12 +1191,14 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
             
             plt.title(title)
             plt.legend()
-            plt.show()
+            #plt.show()
+            output_dir = "../../figures/big_dataset/bysecting/anat/new/"
+            fig.savefig('{}/{}.png'.format(output_dir,title))
     
         fit_anat = coeff_w
     # case B) partial duplication
     if dupl_type == 'PD':
-        
+        ################################################################
         weights = np.concatenate((an_pos[0],an_neg[0]))
         xs_conc = np.concatenate((xs_pos[0],xs_neg[0]))
         ys_conc = np.concatenate((ys_pos[0],ys_neg[0]))
@@ -1102,21 +1219,36 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
         y_fit = x_fit*coeff_w[0]+coeff_w[1]
         y_fit_1 = x_fit*coeff_w_1[0]+coeff_w_1[1]
         y_fit_2 = x_fit*coeff_w_2[0]+coeff_w_2[1]
+        ##################################################################
+        
+        w_main_pos = [an_pos[0][x] for x in closest_pos_idx]
+        xs_main_pos = [xs_pos[0][x] for x in closest_pos_idx]
+        ys_main_pos = [ys_pos[0][x] for x in closest_pos_idx]
+        
+        #plt.figure()
+        #plt.scatter(xs_main_pos,ys_main_pos)
+        
+        coeff_w = np.polyfit(xs_main_pos,ys_main_pos,deg = 1, w = w_main_pos)
+    
+        x_fit = np.arange(np.nanmin(xs_neg[0]),np.nanmax(xs_neg[0]),0.01)  # use nanmin/nanmax since there is a nan value in pt[16]
+        y_fit = x_fit*coeff_w[0]+coeff_w[1]
         
         if plot_y_n_fit_anat:
             fig = plt.figure()
             ax = fig.add_subplot(111)
             ax.scatter(xs,ys, c = an, cmap = 'gray')    
             plt.plot(x_fit,y_fit,'r',label = 'linear fit')
-            plt.plot(x_fit,y_fit_1,'b',label = 'fit on zeros')
-            plt.plot(x_fit,y_fit_2,'g',label = 'fit on neg')
+            #plt.plot(x_fit,y_fit_1,'b',label = 'fit on zeros')
+            #plt.plot(x_fit,y_fit_2,'g',label = 'fit on neg')
             cax, _ = matplotlib.colorbar.make_axes(ax)
             cbar = matplotlib.colorbar.ColorbarBase(cax, cmap='gray')
             cbar.ax.set_yticklabels(['< 0 convex', '','','','', '> 0 concave'])  # vertically oriented colorbar
             
             plt.title(title)
             plt.legend()
-            plt.show()
+            #plt.show()
+            output_dir = "../../figures/big_dataset/bysecting/anat/new/"
+            fig.savefig('{}/{}.png'.format(output_dir,title))
     
         fit_anat = coeff_w
         
@@ -1149,7 +1281,9 @@ def anatomy_new(data,title,dupl_type,plot_y_n_three_anat_regions,plot_y_n_anat_c
             cbar.ax.set_yticklabels(['< 0 convex', '','','','', '> 0 concave'])  # vertically oriented colorbar
             plt.title(title)
             plt.legend()
-            plt.show()
+            #plt.show()
+            output_dir = "../../figures/big_dataset/bysecting/anat/new/"
+            fig.savefig('{}/{}.png'.format(output_dir,title))
     
         fit_anat = coeff_w
     
@@ -1170,3 +1304,55 @@ def cfr_bysecting_lines(data,title,fit_tono,fit_anat,fit_comb_tono_anat):
     plt.title(title)
     plt.legend()
     plt.show()
+    
+    
+def data_in_hull(xs,ys,zs,fs,an,margin=0.25,plot_hull = False):
+    points = np.column_stack((xs, ys))
+    hull = ConvexHull(points)
+    small_hull = np.zeros_like(hull.simplices)
+    
+    if plot_hull:
+        plt.figure()
+        plt.plot(points[:,0], points[:,1], 'o')
+    center_x = (np.max(xs)+np.min(xs))*0.5
+    center_y = (np.max(ys)+np.min(ys))*0.5
+    center = np.column_stack((center_x,center_y))
+    if plot_hull:
+        plt.plot(center[0][0],center[0][1],'ro')
+    for s,simplex in enumerate(hull.simplices):
+        if plot_hull:
+            plt.plot(points[simplex, 0], points[simplex, 1], 'k-')
+        
+        x_hull = points[simplex, 0][0]
+        y_hull = points[simplex, 1][0]  
+        small_hull[s,0] = x_hull - margin*(x_hull-center_x)
+        small_hull[s,1] = y_hull - margin*(y_hull-center_y)
+    #convert int to list
+    small_hull = list(small_hull)
+    # sort by polar angle
+    small_hull.sort(key=lambda p: math.atan2(p[1]-center_y,p[0]-center_x))
+    # plot points
+    if plot_hull:
+        plt.plot([p[0] for p in small_hull],[p[1] for p in small_hull],'ro')
+        pylab.figure()
+        pylab.scatter([p[0] for p in points],[p[1] for p in points])
+        pylab.scatter([p[0] for p in small_hull],[p[1] for p in small_hull])
+    polygon = patches.Polygon(small_hull,closed=False,fill=True,color = 'g')
+    path = polygon.get_path()
+    
+    points = list(points)
+    contained = path.contains_points(points)
+    contained_idx = list(np.where(contained))
+    points_x = [points[p][0] for p in np.arange(len(points))]
+    points_y = [points[p][1] for p in np.arange(len(points))]
+    xs = np.asarray([points_x[idx] for idx in contained_idx[0]])
+    ys = np.asarray([points_y[idx] for idx in contained_idx[0]])
+    zs = np.asarray([zs[idx] for idx in contained_idx[0]])
+    fs = np.asarray([fs[idx] for idx in contained_idx[0]])
+    an = np.asarray([an[idx] for idx in contained_idx[0]])
+    contained_points = np.column_stack((xs,ys))
+
+    if plot_hull:
+        pylab.scatter(contained_points[:,0],contained_points[:,1],color = 'k')
+    
+    return xs,ys,zs,fs,an

@@ -9,22 +9,32 @@ Created on Mon Nov 19 22:36:42 2018
 # computes different operations such as finding the bysecting line and returns an array of features 
 
 from import_function import *
+from patient_augmentation_function import *
 import scipy.io
 import matplotlib
 
 # the main function
-def compute_features(data_tono, data_anat, data_dupl, data_names, which_dataset, which_fit = 'comb_tono_anat'):
+def compute_features(data_tono, data_anat, data_dupl, data_names, targets, which_dataset, which_fit = 'comb_tono_anat'):
     
     # import data
     threeD_data = import_data_from_list(data_tono, data_anat, which_dataset) 
     
+    #print('3d before',np.size(threeD_data))
+    
+    # augment patient dataset
+    #threeD_data, data_dupl, data_names, targets, tot_test_size = patient_augmentation(threeD_data, data_dupl, data_names, targets)
+    
+    #print('3d after',np.size(threeD_data))
+    
     # preprocessing
     # 1) bysecting line
-    fit_tono, fit_anat, fit_comb_tono_anat, fit, theta_diff = bysecting_lines_angles_cfr(threeD_data, data_dupl, data_names, which_fit = 'comb_tono_anat')
+    fit_tono, fit_anat, fit_comb_tono_anat, fit, theta_diff = bysecting_lines_angles_cfr(threeD_data, data_dupl, data_names, targets, which_fit = 'anat_only')
     # 2) mean distance of frequencies from line and difference number above-below line
     mean_dist, above_minus_below = average_distance_and_voxel_number(threeD_data, data_names, fit)
     # 3) angle defined by vertices LHL and distance between the two Furthest-from-line High voxels
     angle_HLH, dist_HH = angle_HLH_and_dist(threeD_data, data_names, fit)
+    # 4) clusters size and number for three groups of frequencies
+    cluster_num_low, cluster_num_med, cluster_num_high, cluster_size_low, cluster_size_med, cluster_size_high = eps_loop_3_ranges(threeD_data, data_names, fit)
     
     
     # Now put the features together
@@ -43,14 +53,12 @@ def compute_features(data_tono, data_anat, data_dupl, data_names, which_dataset,
     #print('dist_HH',dist_HH)
     #print('theta_diff',theta_diff)
     
-    features = np.concatenate((above_minus_below, mean_dist, angle_HLH, dist_HH, theta_diff), axis = 1)
-    
-    print('features',np.shape(features))
-    
-    return features
+    features = np.concatenate((above_minus_below, mean_dist, angle_HLH, dist_HH, theta_diff, cluster_num_low, cluster_num_med, cluster_num_high, cluster_size_low, cluster_size_med, cluster_size_high), axis = 1)
+    return features, targets    
+    #return features, targets, tot_test_size
 
 # the functions exploited in compute_features
-def import_data_from_list(data_tono, data_anat, which_dataset):
+def import_data_from_list(data_tono, data_anat, which_dataset = 'big_dataset'):
     scan_number = np.shape(data_tono)[0]
     
     if which_dataset == 'normalized':
@@ -85,14 +93,10 @@ def import_data_from_list(data_tono, data_anat, which_dataset):
     
     return threeD_data
 
-def bysecting_lines_angles_cfr(threeD_data, data_dupl, data_names, which_fit = 'comb_tono_anat'):
+def bysecting_lines_angles_cfr(threeD_data, data_dupl, data_names, targets, which_fit = 'anat_only'):
     # BYSECTING LINE - FIND 
     scan_number = np.shape(threeD_data)[0]
-    # A) Only tono
-    fit_tono = np.zeros([scan_number,2])
-    for i in range(scan_number):
-        fit_tono[i,:] = bysect_line(threeD_data[i,:,:], data_names[i], False) # NB here fs is already 14-fs
-    
+        
     # B) Only anat
     anat_classify = np.zeros([scan_number,1])  # which gyrus shape does the person have?
     fit_anat = np.zeros([scan_number,2])   # fit of parameters on the basis of anatomy
@@ -100,7 +104,13 @@ def bysecting_lines_angles_cfr(threeD_data, data_dupl, data_names, which_fit = '
         #ctl_anat_classify[i], fit_ctl_anat[i,:] = anatomy(ctl_threeD_data[i,:,:],ctl_name[i],plot_y_n_three_anat_regions_ctl,plot_y_n_anat_clusters_ctl,plot_y_n_fit_anat_ctl)
         
         fit_anat[i,:] = anatomy_new(threeD_data[i,:,:],data_names[i], data_dupl[i], False, False, False)
-              
+    
+    # A) Only tono
+    fit_tono = np.zeros([scan_number,2])
+    for i in range(scan_number):
+        fit_tono[i,:] = bysect_line(threeD_data[i,:,:], data_names[i], fit_anat[i,:], 
+                        target = targets[i], plot_y_n = False, target_yn = False) # NB here fs is already 14-fs
+        
     # C) Combined tono and anat  ---> tono weights 20%, anat weights 80%
     # which weights you want to assign to the two lines?
     perc_tono = 0.5
@@ -146,3 +156,19 @@ def angle_HLH_and_dist(threeD_data, data_names, fit):
         angle_HLH[i],_,_,_,_,_,_,dist_HH[i] = find_angles(threeD_data[i,:,:],data_names[i],fit[i,:], False, False)
         
     return angle_HLH, dist_HH
+
+def eps_loop_3_ranges(threeD_data, data_names, fit):
+    scan_number = np.shape(threeD_data)[0]
+    cluster_num_low = np.zeros([scan_number,3])
+    cluster_size_med = np.zeros([scan_number,3])
+    cluster_num_high = np.zeros([scan_number,3])
+    cluster_size_low = np.zeros([scan_number,3])
+    cluster_num_med = np.zeros([scan_number,3])
+    cluster_size_high = np.zeros([scan_number,3])
+    eps_loop = np.arange(1.,2.5,0.5)
+    for i in range(scan_number):
+        for e,eps in enumerate(eps_loop):
+            plot_y_n_cluster_map_ctl = False
+            _,_, cluster_num_low[i,e], cluster_num_med[i,e], cluster_num_high[i,e], cluster_size_low[i,e], cluster_size_med[i,e], cluster_size_high[i,e] = three_f_ranges(threeD_data[i,:,:],data_names[i],fit[i,:], plot_y_n_cluster_map_ctl, eps = eps, min_samples = 3)
+    
+    return cluster_num_low, cluster_num_med, cluster_num_high, cluster_size_low, cluster_size_med, cluster_size_high
